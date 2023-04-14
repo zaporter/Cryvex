@@ -20,8 +20,8 @@ public:
 
 class {{component_name | camel}} : public ComponentBase {
 public:
-  {% for responsetype in responses %}
-  {% endfor %}
+  {% for responsetype in responses -%}
+  {%- endfor %}
   struct power_status {
     bool is_on;
     double power_pct;
