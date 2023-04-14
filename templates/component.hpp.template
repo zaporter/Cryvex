@@ -1,0 +1,55 @@
+#pragma once
+
+#include <common/proto_type.hpp>
+#include <common/utils.hpp>
+#include <component/{{ component_name | lower }}/v1/{{ component_name | lower }}.pb.h>
+#include <config/resource.hpp>
+#include <registry/registry.hpp>
+#include <string>
+#include <subtype/subtype.hpp>
+
+class {{ component_name | camel }}Subtype : public ResourceSubtype {
+public:
+  std::shared_ptr<ResourceServerBase> create_resource_server(
+      std::shared_ptr<SubtypeService> svc) override;
+  std::shared_ptr<ResourceBase> create_rpc_client(
+      std::string name, std::shared_ptr<grpc::Channel> chan) override;
+  {{ component_name | camel }}Subtype(const google::protobuf::ServiceDescriptor *service_descriptor)
+      : ResourceSubtype(service_descriptor){};
+};
+
+class {{component_name | camel}} : public ComponentBase {
+public:
+  {% for responsetype in responses %}
+  {% endfor %}
+  struct power_status {
+    bool is_on;
+    double power_pct;
+  };
+  typedef double position;
+  struct properties {
+    bool position_reporting;
+  };
+  static std::shared_ptr<ResourceSubtype> resource_subtype();
+  static Subtype subtype();
+  static power_status
+  from_proto(viam::component::motor::v1::IsPoweredResponse proto);
+  static position
+  from_proto(viam::component::motor::v1::GetPositionResponse proto);
+  static viam::component::motor::v1::IsPoweredResponse
+  to_proto(power_status power_status);
+  static viam::component::motor::v1::GetPositionResponse
+  to_proto(position position);
+  virtual AttributeMap do_command(AttributeMap command) = 0;
+  virtual void set_power(double power_pct) = 0;
+  virtual void go_for(double rpm, double revolutions) = 0;
+  virtual void go_to(double rpm, double position_revolutions) = 0;
+  virtual void reset_zero_position(double offset) = 0;
+  virtual position get_position() = 0;
+  virtual power_status get_power_status() = 0;
+  virtual properties get_properties() = 0;
+  virtual bool is_moving() = 0;
+
+protected:
+  explicit Motor(std::string name) : ComponentBase(std::move(name)){};
+};
