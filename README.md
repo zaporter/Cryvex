@@ -5,7 +5,7 @@ If you found this project without someone telling you about it, you probably don
 
 
 Limitations:
-- proto enums are not currently supported
+- optional types are not optional
 - it does not actually compile the proto so imports dont work
 - formatting is bad at times (run clang-format)
 
