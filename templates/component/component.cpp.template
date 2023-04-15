@@ -1,5 +1,5 @@
-{% set snake_name = component.name | lower %}
-{% set camel_name = component.name | camel %}
+{%- set snake_name = component.name | lower %}
+{%- set camel_name = component.name | camel %}
 #include <components/{{ snake_name }}/{{ snake_name }}.hpp>
 
 #include <google/protobuf/descriptor.h>
@@ -41,15 +41,15 @@ Subtype {{ camel_name }}::subtype() {
 {{ camel_name }}::{{ fn.return_t }} {{ camel_name }}::{{ fn.name }}({% for arg in fn.args -%} 
     viam::component::{{ snake_name }}::v1::{{ arg.type_t }} {{ arg.name }}{% if not loop.last %}, {% endif %}
 {%- endfor %}){
-    {{ camel_name }}::{{ fn.return_t }} deserialized;
+    {{ camel_name }}::{{ fn.return_t }} {{ fn.return_t }};
     {%- for struct_type in component.structs %}
     {%- if struct_type.name == fn.return_t %}
     {%- for member in struct_type.members %}
-    deserialized.{{ member.name }} = proto.{{ member.name }}();
+    {{ fn.return_t }}.{{ member.name }} = proto.{{ member.name }}();
     {% endfor -%}
     {% endif -%}
     {% endfor -%}
-    return deserialized;
+    return {{ fn.return_t }};
 }
 {% endfor %}
 

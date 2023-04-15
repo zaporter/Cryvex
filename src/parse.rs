@@ -47,6 +47,7 @@ pub fn from_proto(input: &str) -> Result<ComponentServiceProto> {
     let mut service_name = String::new();
     let mut rpcs = Vec::new();
     let mut messages = Vec::new();
+    let mut last_comment: Option<String> = None;
 
     for pair in pairs {
         // if it is topLevelDef, we care, unwrap
@@ -69,6 +70,12 @@ pub fn from_proto(input: &str) -> Result<ComponentServiceProto> {
                                 .to_string();
                         }
 
+                        Rule::COMMENT => {
+                            last_comment = Some(
+                                last_comment.take().unwrap_or(String::new())
+                                    + service_pair.as_str().into(),
+                            )
+                        }
                         Rule::rpc => {
                             let mut inner = service_pair.into_inner();
                             let name = inner.next().unwrap().as_str().to_string();
@@ -79,7 +86,7 @@ pub fn from_proto(input: &str) -> Result<ComponentServiceProto> {
                             let request_name = inner.next().unwrap().as_str().to_string();
                             let response_name = inner.next().unwrap().as_str().to_string();
                             rpcs.push(Rpc {
-                                comment: None,
+                                comment: last_comment.take(),
                                 name,
                                 request_name,
                                 response_name,
@@ -89,7 +96,12 @@ pub fn from_proto(input: &str) -> Result<ComponentServiceProto> {
                     }
                 }
             }
+            Rule::COMMENT => {
+                last_comment =
+                    Some(last_comment.take().unwrap_or(String::new()) + pair.as_str().into())
+            }
             Rule::message => {
+                let comment = last_comment.take();
                 let mut inner = pair.into_inner();
                 // let comment = inner
                 //     .next()
@@ -99,7 +111,12 @@ pub fn from_proto(input: &str) -> Result<ComponentServiceProto> {
                 let mut fields = Vec::new();
 
                 for field_pair in inner.next().unwrap().into_inner() {
-                    if field_pair.as_rule() == Rule::field {
+                    if field_pair.as_rule() == Rule::COMMENT {
+                        last_comment = Some(
+                            last_comment.take().unwrap_or(String::new())
+                                + field_pair.as_str().into(),
+                        )
+                    } else if field_pair.as_rule() == Rule::field {
                         let mut field_inner = field_pair.into_inner();
                         // multiplicity field
                         field_inner.next().unwrap();
@@ -110,7 +127,7 @@ pub fn from_proto(input: &str) -> Result<ComponentServiceProto> {
                         let type_t = field_inner.next().unwrap().as_str().to_string();
                         let field_name = field_inner.next().unwrap().as_str().to_string();
                         fields.push(Field {
-                            comment: None,
+                            comment: last_comment.take(),
                             name: field_name,
                             type_t,
                         });
@@ -118,7 +135,7 @@ pub fn from_proto(input: &str) -> Result<ComponentServiceProto> {
                 }
 
                 messages.push(Message {
-                    comment: None,
+                    comment,
                     name,
                     fields,
                 });

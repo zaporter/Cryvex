@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, path::PathBuf};
 
 use crate::{parse::*, utils, CliOpts};
 use anyhow::{anyhow, Context};
@@ -12,11 +12,44 @@ const TO_PROTO_T: &str = "to_proto";
 const NAME_PARAM: &str = "name";
 const EXTRA_PARAM: &str = "extra";
 
+pub fn gen_templates(proto: ComponentServiceProto, opts: &CliOpts) -> anyhow::Result<()> {
+    let mut tera = match Tera::new("templates/**/*.template") {
+        Ok(t) => t,
+        Err(e) => {
+            println!("Parsing error(s): {}", e);
+            ::std::process::exit(1);
+        }
+    };
+    // built into tera
+    //tera.register_filter("lower", tera_text_filters::lower_case);
+    tera.register_filter("camel", tera_text_filters::camel_case);
+
+    let template = TemplateInput::from_proto(&proto, opts)?;
+    let context = tera::Context::from_serialize(&template)?;
+
+    for template_name in tera.get_template_names() {
+        // mock_component.cpp.template -> ./out/mock_motor.cpp
+        let out_name = template_name.trim_end_matches(".template");
+        let out_name = out_name.replace("component", &template.component.name);
+        let out_name = out_name.to_case(convert_case::Case::Snake);
+        let out_path = PathBuf::from(out_name);
+        let out_path = opts.out_folder.join(out_path);
+        let prefix = &out_path.parent().unwrap();
+        std::fs::create_dir_all(prefix).unwrap();
+        let result = tera.render(template_name, &context)?;
+        std::fs::write(out_path.clone(), result)?;
+
+        println!("{}", &out_path.to_string_lossy())
+    }
+    // println!("{}", res);
+    Ok(())
+}
+
 // This was created to allow for future growth
 // It looks pointless now but it isnt
 #[derive(Serialize, Clone, Debug)]
 struct TemplateInput {
-    component: ComponentDec,
+    pub component: ComponentDec,
 }
 
 #[derive(Serialize, Clone, Debug)]
@@ -100,6 +133,12 @@ impl TypeReplacementMap {
         let mut repl_map = Self::default();
         // be careful about adding hardcoded replaces
         repl_map.insert("string", "std::string")?;
+        repl_map.insert("uint64", "uint64_t")?;
+        repl_map.insert("int64", "int64_t")?;
+        repl_map.insert("int32", "int32_t")?;
+        repl_map.insert("uint32", "uint32_t")?;
+        repl_map.insert("uint8", "uint8_t")?;
+        repl_map.insert("int8", "int8_t")?;
         for message in &proto.messages {
             let name = &message.name;
             // Only generate replacements for the responses
@@ -111,7 +150,7 @@ impl TypeReplacementMap {
                 continue;
             }
             let suggested_name = request_to_struct_name(&name);
-            let new_name = if opts.prompt_for_struct_names {
+            let new_name = if !opts.dont_prompt_for_struct_names {
                 let entered_name = utils::string_prompt(&format!("Replacing struct name {name} with {suggested_name}. Press enter to confirm or suggest a new name:"));
                 if entered_name.len() > 0 {
                     entered_name
@@ -126,7 +165,7 @@ impl TypeReplacementMap {
         for rpc in &proto.rpcs {
             let name = &rpc.name;
             let suggested_name = rpc_to_function_name(&name);
-            let new_name = if opts.prompt_for_function_names {
+            let new_name = if !opts.dont_prompt_for_function_names {
                 let entered_name = utils::string_prompt(&format!("Replacing function name {name} with {suggested_name}. Press enter to confirm or suggest a new name:"));
                 if entered_name.len() > 0 {
                     entered_name
@@ -141,31 +180,6 @@ impl TypeReplacementMap {
 
         Ok(repl_map)
     }
-}
-
-pub fn gen_templates(proto: ComponentServiceProto, opts: &CliOpts) -> anyhow::Result<()> {
-    let mut tera = match Tera::new("templates/**/*.template") {
-        Ok(t) => t,
-        Err(e) => {
-            println!("Parsing error(s): {}", e);
-            ::std::process::exit(1);
-        }
-    };
-    // built into tera
-    //tera.register_filter("lower", tera_text_filters::lower_case);
-    tera.register_filter("camel", tera_text_filters::camel_case);
-
-    let template = TemplateInput::from_proto(&proto, opts)?;
-    println!("{:#?}", template);
-    let context = tera::Context::from_serialize(&template)?;
-
-    for template in tera.get_template_names() {
-        let out_name = template.trim_end_matches(".template");
-        println!("{}", out_name)
-    }
-    let res = tera.render("test_component.cpp.template", &context)?;
-    println!("{}", res);
-    Ok(())
 }
 
 impl TemplateInput {

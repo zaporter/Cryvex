@@ -29,7 +29,7 @@ SOFTWARE.
 
 */
 WHITESPACE = _{ " " | "\t" | "\n" | "\r" }
-COMMENT = _{ "//" ~ (!"\n" ~ ANY)* | "/*" ~ (!"*/" ~ ANY)* ~ "*/" }
+COMMENT = { ("//" ~ (!"\n" ~ ANY)* | "/*" ~ (!"*/" ~ ANY)* ~ "*/")+ }
 BOM = _{ "\u{feff}" }
 
 letter = { 'A'..'Z' | 'a'..'z' }
