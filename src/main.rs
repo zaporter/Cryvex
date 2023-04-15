@@ -38,8 +38,8 @@ fn main() {
     let component_proto = ComponentServiceProto::from_path(&opts.proto_path).unwrap();
     log::info!("Finished proto parsing");
 
-    println!("{:#?}", component_proto);
-    // log::info!("Starting template generation");
-    // template::gen_templates(component_proto, &opts).unwrap();
-    // log::info!("Finished template generation");
+    // println!("{:#?}", component_proto);
+    log::info!("Starting template generation");
+    template::gen_templates(component_proto, &opts).unwrap();
+    log::info!("Finished template generation");
 }

@@ -24,8 +24,16 @@ class {{ camel_name }} : public ComponentBase {
 public:
   {% for type in component.structs %}
   struct {{ type.name }} {
-    {% for member in type.members -%}
+    {%- for member in type.members %}
         {{ member.type_t }} {{ member.name }};
+    {%- endfor %}
+  };
+  {% endfor %}
+  {% for enum in component.enums %}
+  enum {{ enum.name }} {
+    {%- for member in enum.members %}
+        {{ member.name }}{% if not loop.last %}, {% endif %}
+
     {%- endfor %}
   };
   {% endfor %}

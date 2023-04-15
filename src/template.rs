@@ -59,6 +59,7 @@ struct ComponentDec {
     to_proto_fns: Vec<FnDec>,
     member_fns: Vec<FnDec>,
     structs: Vec<StructDec>,
+    enums: Vec<Enum>, // from parse.rs
     rpcs: Vec<RpcDec>,
 }
 
@@ -110,6 +111,10 @@ fn rpc_to_function_name(request: &str) -> String {
     request.to_case(convert_case::Case::Snake)
 }
 
+fn enum_to_enum_name(request: &str) -> String {
+    request.to_case(convert_case::Case::Snake)
+}
+
 impl TypeReplacementMap {
     pub fn insert(&mut self, key: &str, val: &str) -> anyhow::Result<()> {
         if self.map.contains_key(val) {
@@ -139,6 +144,7 @@ impl TypeReplacementMap {
         repl_map.insert("uint32", "uint32_t")?;
         repl_map.insert("uint8", "uint8_t")?;
         repl_map.insert("int8", "int8_t")?;
+        repl_map.insert("common.v1.DoCommandResponse", "AttributeMap")?;
         for message in &proto.messages {
             let name = &message.name;
             // Only generate replacements for the responses
@@ -167,6 +173,22 @@ impl TypeReplacementMap {
             let suggested_name = rpc_to_function_name(&name);
             let new_name = if !opts.dont_prompt_for_function_names {
                 let entered_name = utils::string_prompt(&format!("Replacing function name {name} with {suggested_name}. Press enter to confirm or suggest a new name:"));
+                if entered_name.len() > 0 {
+                    entered_name
+                } else {
+                    suggested_name
+                }
+            } else {
+                suggested_name
+            };
+            repl_map.insert(name, &new_name)?;
+        }
+
+        for enum_ in &proto.enums {
+            let name = &enum_.name;
+            let suggested_name = enum_to_enum_name(&name);
+            let new_name = if !opts.dont_prompt_for_struct_names {
+                let entered_name = utils::string_prompt(&format!("Replacing enum name {name} with {suggested_name}. Press enter to confirm or suggest a new name:"));
                 if entered_name.len() > 0 {
                     entered_name
                 } else {
@@ -207,6 +229,7 @@ impl ComponentDec {
         let mut to_proto_fns = Vec::new();
         let mut structs = Vec::new();
         let mut rpcs = Vec::new();
+        let mut enums = Vec::new();
 
         for message in &proto.messages {
             let orig_name = &message.name;
@@ -246,13 +269,22 @@ impl ComponentDec {
                 .iter()
                 .map(|f| Variable {
                     name: f.name.clone(),
-                    type_t: f.type_t.clone(),
+                    type_t: repl_map.map(&f.type_t),
                 })
                 .collect();
             structs.push(StructDec {
                 name: repl_map.map(&name),
                 members: args,
             })
+        }
+        for enum_ in &proto.enums {
+            let orig_name = &enum_.name;
+            let name = repl_map.map(&orig_name);
+            enums.push(Enum {
+                comment: enum_.comment.clone(),
+                name,
+                members: enum_.members.clone(),
+            });
         }
         for rpc in &proto.rpcs {
             let orig_name = &rpc.name;
@@ -280,7 +312,7 @@ impl ComponentDec {
                     .filter(|f| opts.include_extra_field || f.name != EXTRA_PARAM)
                     .map(|f| Variable {
                         name: f.name.clone(),
-                        type_t: f.type_t.clone(),
+                        type_t: repl_map.map(&f.type_t),
                     })
                     .collect()
             } else {
@@ -303,6 +335,7 @@ impl ComponentDec {
             member_fns,
             structs,
             rpcs,
+            enums,
         })
     }
 }

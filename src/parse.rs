@@ -2,6 +2,7 @@ use anyhow::{anyhow, Result};
 
 use pest::Parser;
 use pest_derive::Parser;
+use serde::Serialize;
 
 use std::fs;
 use std::path::PathBuf;
@@ -11,6 +12,7 @@ pub struct ComponentServiceProto {
     pub name: String,
     pub rpcs: Vec<Rpc>,
     pub messages: Vec<Message>,
+    pub enums: Vec<Enum>,
 }
 
 #[derive(Clone, Debug)]
@@ -35,6 +37,17 @@ pub struct Field {
     pub name: String,
     pub type_t: String,
 }
+#[derive(Serialize, Clone, Debug)]
+pub struct Enum {
+    pub comment: Option<String>,
+    pub name: String,
+    pub members: Vec<EnumMember>,
+}
+#[derive(Serialize, Clone, Debug)]
+pub struct EnumMember {
+    pub comment: Option<String>,
+    pub name: String,
+}
 
 #[derive(Parser)]
 #[grammar = "proto.pest"]
@@ -47,6 +60,7 @@ pub fn from_proto(input: &str) -> Result<ComponentServiceProto> {
     let mut service_name = String::new();
     let mut rpcs = Vec::new();
     let mut messages = Vec::new();
+    let mut enums = Vec::new();
     let mut last_comment: Option<String> = None;
 
     for pair in pairs {
@@ -79,10 +93,6 @@ pub fn from_proto(input: &str) -> Result<ComponentServiceProto> {
                         Rule::rpc => {
                             let mut inner = service_pair.into_inner();
                             let name = inner.next().unwrap().as_str().to_string();
-                            // let comment = inner
-                            //     .next()
-                            //     .filter(|p| p.as_rule() == Rule::COMMENT)
-                            //     .map(|p| p.as_str().to_string());
                             let request_name = inner.next().unwrap().as_str().to_string();
                             let response_name = inner.next().unwrap().as_str().to_string();
                             rpcs.push(Rpc {
@@ -100,13 +110,37 @@ pub fn from_proto(input: &str) -> Result<ComponentServiceProto> {
                 last_comment =
                     Some(last_comment.take().unwrap_or(String::new()) + pair.as_str().into())
             }
+            Rule::enum_ => {
+                let comment = last_comment.take();
+                let mut inner = pair.into_inner();
+                let name = inner.next().unwrap().as_str().to_string();
+                let mut members = Vec::new();
+
+                for field_pair in inner.next().unwrap().into_inner() {
+                    if field_pair.as_rule() == Rule::COMMENT {
+                        last_comment = Some(
+                            last_comment.take().unwrap_or(String::new())
+                                + field_pair.as_str().into(),
+                        )
+                    } else if field_pair.as_rule() == Rule::enumField {
+                        let mut field_inner = field_pair.into_inner();
+                        let field_name = field_inner.next().unwrap().as_str().to_string();
+                        members.push(EnumMember {
+                            comment: last_comment.take(),
+                            name: field_name,
+                        });
+                    }
+                }
+
+                enums.push(Enum {
+                    comment,
+                    name,
+                    members,
+                });
+            }
             Rule::message => {
                 let comment = last_comment.take();
                 let mut inner = pair.into_inner();
-                // let comment = inner
-                //     .next()
-                //     .filter(|p| p.as_rule() == Rule::COMMENT)
-                //     .map(|p| p.as_str().to_string());
                 let name = inner.next().unwrap().as_str().to_string();
                 let mut fields = Vec::new();
 
@@ -120,10 +154,6 @@ pub fn from_proto(input: &str) -> Result<ComponentServiceProto> {
                         let mut field_inner = field_pair.into_inner();
                         // multiplicity field
                         field_inner.next().unwrap();
-                        // let field_comment = field_inner
-                        //     .next()
-                        //     .filter(|p| p.as_rule() == Rule::COMMENT)
-                        //     .map(|p| p.as_str().to_string());
                         let type_t = field_inner.next().unwrap().as_str().to_string();
                         let field_name = field_inner.next().unwrap().as_str().to_string();
                         fields.push(Field {
@@ -151,6 +181,7 @@ pub fn from_proto(input: &str) -> Result<ComponentServiceProto> {
     Ok(ComponentServiceProto {
         name: service_name,
         rpcs,
+        enums,
         messages,
     })
 }
