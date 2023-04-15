@@ -1,0 +1,38 @@
+{% set snake_name = component.name | lower %}
+{% set camel_name = component.name | camel %}
+#include <components/{{ snake_name }}/client.hpp>
+
+#include <algorithm>
+#include <memory>
+#include <string>
+#include <utility>
+
+#include <common/v1/common.pb.h>
+#include <component/{{ snake_name }}/v1/{{ snake_name }}.grpc.pb.h>
+
+#include <common/utils.hpp>
+#include <components/{{ snake_name }}/{{ snake_name }}.hpp>
+#include <config/resource.hpp>
+#include <robot/client.hpp>
+
+
+{% for fn in component.member_fns %}
+{{ camel_name }}::{{ fn.return_t }} {{ camel_name }}Client::{{ fn.name }}({% for arg in fn.args -%} 
+    {{ arg.type_t }} {{ arg.name }}{% if not loop.last %}, {% endif %}
+{%- endfor %}){
+    viam::component::{{ snake_name }}::v1::{{ component.rpcs | filter(attribute="func_name", value=fn.name) | nth(n=0) | get(key="req_t") }} request;
+    viam::component::{{ snake_name }}::v1::{{ component.rpcs | filter(attribute="func_name", value=fn.name) | nth(n=0) | get(key="resp_t") }} response;
+
+    grpc::ClientContext ctx;
+
+    *request.mutable_name() = this->name();
+
+    {%- for arg in fn.args %}
+    request.set_{{ arg.name }}({{ arg.name }});
+    {%- endfor %}
+
+    stub_->{{  component.rpcs | filter(attribute="func_name", value=fn.name) | nth(n=0) | get(key="rpc_name") }}(&ctx, request, &response);
+    return from_proto(response);
+}
+{% endfor %}
+

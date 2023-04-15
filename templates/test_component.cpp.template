@@ -1,0 +1,33 @@
+{% set snake_name = component.name | lower %}
+{% set camel_name = component.name | camel %}
+#define BOOST_TEST_MODULE test module test_{{ snake_name }}
+
+#include <typeinfo>
+#include <unordered_map>
+#include <utility>
+#include <vector>
+
+#include <boost/test/included/unit_test.hpp>
+
+#include <common/v1/common.pb.h>
+#include <component/{{ snake_name }}/v1/{{ snake_name }}.grpc.pb.h>
+#include <component/{{ snake_name }}/v1/{{ snake_name }}.pb.h>
+
+#include <common/proto_type.hpp>
+#include <components/{{ snake_name }}/{{ snake_name }}.hpp>
+#include <components/{{ snake_name }}/client.hpp>
+#include <components/{{ snake_name }}/server.hpp>
+#include <tests/mocks/mock_{{ snake_name }}.hpp>
+#include <tests/test_utils.hpp>
+
+BOOST_AUTO_TEST_SUITE(test_{{ snake_name }})
+
+{% for fn in component.member_fns %}
+BOOST_AUTO_TEST_CASE(test_{{ fn.name }}) {
+    std::shared_ptr<Mock{{ camel_name }}> {{ snake_name }} = Mock{{ camel_name }}::get_mock_{{ snake_name }}();
+    BOOST_CHECK(true);
+}
+{% endfor %}
+
+BOOST_AUTO_TEST_SUITE_END()
+

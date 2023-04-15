@@ -1,0 +1,89 @@
+{% set snake_name = component.name | lower %}
+{% set camel_name = component.name | camel %}
+#include <components/{{ snake_name }}/{{ snake_name }}.hpp>
+
+#include <google/protobuf/descriptor.h>
+
+#include <component/{{ snake_name }}/v1/{{ snake_name }}.grpc.pb.h>
+#include <component/{{ snake_name }}/v1/{{ snake_name }}.pb.h>
+
+#include <common/utils.hpp>
+#include <components/{{ snake_name }}/client.hpp>
+#include <components/{{ snake_name }}/server.hpp>
+#include <registry/registry.hpp>
+#include <resource/resource.hpp>
+
+std::shared_ptr<ResourceServerBase> {{ camel_name }}Subtype::create_resource_server(
+    std::shared_ptr<SubtypeService> svc) {
+    return std::make_shared<{{ camel_name }}Server>(svc);
+};
+
+std::shared_ptr<ResourceBase> {{ component.name | camel }}Subtype::create_rpc_client(
+    std::string name, std::shared_ptr<grpc::Channel> chan) {
+    return std::make_shared<{{ component.name | camel }}Client>(std::move(name), std::move(chan));
+};
+
+std::shared_ptr<ResourceSubtype> {{ camel_name }}::resource_subtype() {
+    const google::protobuf::DescriptorPool* p = google::protobuf::DescriptorPool::generated_pool();
+    const google::protobuf::ServiceDescriptor* sd =
+        p->FindServiceByName(viam::component::{{ snake_name }}::v1::{{ camel_name }}Service::service_full_name());
+    if (sd == nullptr) {
+        throw std::runtime_error("Unable to get service descriptor for the {{ snake_name }} service");
+    }
+    return std::make_shared<{{ camel_name }}Subtype>(sd);
+}
+
+Subtype {{ camel_name }}::subtype() {
+    return Subtype(RDK, COMPONENT, "{{ snake_name }}");
+}
+
+{% for fn in component.from_proto_fns %}
+{{ camel_name }}::{{ fn.return_t }} {{ camel_name }}::{{ fn.name }}({% for arg in fn.args -%} 
+    viam::component::{{ snake_name }}::v1::{{ arg.type_t }} {{ arg.name }}{% if not loop.last %}, {% endif %}
+{%- endfor %}){
+    {{ camel_name }}::{{ fn.return_t }} deserialized;
+    {%- for struct_type in component.structs %}
+    {%- if struct_type.name == fn.return_t %}
+    {%- for member in struct_type.members %}
+    deserialized.{{ member.name }} = proto.{{ member.name }}();
+    {% endfor -%}
+    {% endif -%}
+    {% endfor -%}
+    return deserialized;
+}
+{% endfor %}
+
+{% for fn in component.to_proto_fns %}
+{% set param = fn.args | first%}
+viam::component::{{ snake_name }}::v1::{{ fn.return_t }} {{ camel_name }}::{{ fn.name }}( {{ param.type_t }} {{ param.name }}) {
+    viam::component::{{ snake_name }}::v1::{{ fn.return_t }} proto;
+    {%- for struct_type in component.structs %}
+    {%- if struct_type.name == param.type_t %}
+    {%- for member in struct_type.members %}
+    proto.set_{{ member.name }}({{param.name}}.{{ member.name }});
+    {% endfor -%}
+    {% endif -%}
+    {% endfor -%}
+    return proto
+}
+{% endfor %}
+
+{% for struct_type in component.structs %}
+bool operator==(const {{ camel_name }}::{{struct_type.name}}& lhs, const {{ camel_name }}::{{ struct_type.name }}& rhs) {
+    return (
+    {%- for member in struct_type.members %}
+        lhs.{{ member.name }} == rhs.{{ member.name }} {%- if not loop.last %} && {% endif -%}
+    {% endfor -%}
+    );
+}
+{% endfor %}
+
+
+namespace {
+bool init() {
+    Registry::register_subtype({{ camel_name }}::subtype(), {{ camel_name }}::resource_subtype());
+    return true;
+};
+
+bool inited = init();
+}  // namespace

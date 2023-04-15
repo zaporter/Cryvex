@@ -7,9 +7,10 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1.0.70"
+convert_case = "0.6.0"
 lazy_static = "1.4.0"
 pest = { version = "2.5.7", features = ["pretty-print", "serde"] }
 pest_derive = "2.5.7"
-serde = "1.0.160"
+serde = { version = "1.0.160", features = ["derive"] }
 tera = "1.18.1"
 tera-text-filters = "1.0.0"

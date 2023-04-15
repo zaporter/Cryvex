@@ -1,0 +1,37 @@
+{% set snake_name = component.name | lower %}
+{% set camel_name = component.name | camel %}
+#pragma once
+
+#include <grpcpp/channel.h>
+
+#include <component/{{ snake_name }}/v1/{{ snake_name }}.grpc.pb.h>
+
+#include <components/{{ snake_name }}/{{ snake_name }}.hpp>
+#include <components/{{ snake_name }}/server.hpp>
+#include <config/resource.hpp>
+#include <robot/client.hpp>
+
+class {{ camel_name }}Client : public {{ camel_name }} {
+   public:
+   {%- for fn in component.member_fns %}
+   {{ fn.return_t }} {{ fn.name }}({% for arg in fn.args -%} 
+        {{ arg.type_t }} {{ arg.name }}{% if not loop.last %}, {% endif %}
+    {%- endfor %}) override;
+   {%- endfor %}
+    {{ camel_name }}Client(std::string name, std::shared_ptr<grpc::Channel> channel)
+        : {{ camel_name }}(std::move(name)),
+          stub_(viam::component::{{ snake_name }}::v1::{{ camel_name }}Service::NewStub(channel)),
+          channel_(std::move(channel)){};
+
+   protected:
+    // This constructor leaves the `channel_` as a nullptr. This is useful for testing
+    // purposes, but renders it unusable for production use. Care should be taken to
+    // avoid use of this constructor outside of tests.
+    {{ camel_name }}Client(std::string name,
+                 std::unique_ptr<viam::component::{{ snake_name }}::v1::{{ camel_name }}Service::StubInterface> stub)
+        : {{ camel_name }}(std::move(name)), stub_(std::move(stub)){};
+
+   private:
+    std::unique_ptr<viam::component::{{ snake_name }}::v1::{{ camel_name }}Service::StubInterface> stub_;
+    std::shared_ptr<grpc::Channel> channel_;
+};

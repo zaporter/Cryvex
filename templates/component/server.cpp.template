@@ -1,0 +1,51 @@
+{% set snake_name = component.name | lower %}
+{% set camel_name = component.name | camel %}
+#include <components/{{ snake_name }}/server.hpp>
+
+#include <common/utils.hpp>
+#include <components/{{ snake_name }}/{{ snake_name }}.hpp>
+#include <config/resource.hpp>
+#include <rpc/server.hpp>
+
+
+{% for rpc in component.rpcs %}
+::grpc::Status {{ camel_name }}Server::{{ rpc.rpc_name }}(::grpc::ServerContext* context,
+                        const ::viam::component::{{ snake_name }}::v1::{{ rpc.req_t }}* request,
+                        ::viam::component::{{ snake_name }}::v1::{{ rpc.resp_t }}* response) {
+    
+    if (request == nullptr) {
+        return ::grpc::Status(::grpc::StatusCode::INVALID_ARGUMENT,
+                              "Called [{{ camel_name }}::{{ rpc.rpc_name }}] without a request");
+    };
+
+    std::shared_ptr<ResourceBase> rb = sub_svc->resource(request->name());
+    if (rb == nullptr) {
+        return grpc::Status(grpc::UNKNOWN, "resource not found: " + request->name());
+    }
+    {% set comp_inst = snake_name %}
+    std::shared_ptr<{{ camel_name }}> {{ comp_inst }} = std::dynamic_pointer_cast<{{ camel_name }}>(rb);
+    {% set fn = component.member_fns | filter(attribute="name", value=rpc.func_name) | nth(n=0) %}
+    {%- if not fn.return_t == "void" %}
+    {%- set return_type = component.structs | filter(attribute="name", value=fn.return_t) | nth(n=0) %}
+    {{ camel_name }}::{{ return_type.name | default(value="ERROR/TODO")}} result = {{ comp_inst }}->{{ fn.name }}({% for arg in fn.args -%} 
+        request->{{ arg.name }}(){% if not loop.last %}, {% endif %}
+    {%- endfor -%});
+
+    {%- for member in return_type.members | default(value=[]) %}
+    *response->mutable_{{ member.name }}() = result.{{ member.name }};
+    {%- endfor %}
+    {% endif -%}
+
+    return ::grpc::Status();
+}
+{% endfor %}
+
+void {{ camel_name }}Server::register_server(std::shared_ptr<Server> server) {
+    viam::component::{{ snake_name }}::v1::{{ camel_name }}Service::Service* {{ snake_name }} =
+        static_cast<viam::component::{{ snake_name }}::v1::{{ camel_name }}Service::Service*>(this);
+    server->register_service({{ snake_name }});
+}
+
+std::shared_ptr<SubtypeService> {{ camel_name }}Server::get_sub_svc() {
+    return sub_svc;
+}

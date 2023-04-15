@@ -1,10 +1,10 @@
 use anyhow::{anyhow, Result};
-use pest::iterators::Pair;
-use pest::{error::Error, iterators::Pairs, Parser};
+
+use pest::Parser;
 use pest_derive::Parser;
-use std::io::{stdout, Write};
+
+use std::fs;
 use std::path::PathBuf;
-use std::{fs, io};
 
 #[derive(Clone, Debug)]
 pub struct ComponentServiceProto {
@@ -33,7 +33,7 @@ pub struct Message {
 pub struct Field {
     pub comment: Option<String>,
     pub name: String,
-    pub proto_type: String,
+    pub type_t: String,
 }
 
 #[derive(Parser)]
@@ -107,12 +107,12 @@ pub fn from_proto(input: &str) -> Result<ComponentServiceProto> {
                         //     .next()
                         //     .filter(|p| p.as_rule() == Rule::COMMENT)
                         //     .map(|p| p.as_str().to_string());
-                        let proto_type = field_inner.next().unwrap().as_str().to_string();
+                        let type_t = field_inner.next().unwrap().as_str().to_string();
                         let field_name = field_inner.next().unwrap().as_str().to_string();
                         fields.push(Field {
                             comment: None,
                             name: field_name,
-                            proto_type,
+                            type_t,
                         });
                     }
                 }

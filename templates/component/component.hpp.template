@@ -1,0 +1,61 @@
+{% set snake_name = component.name | lower %}
+{% set camel_name = component.name | camel %}
+#pragma once
+
+#include <common/proto_type.hpp>
+#include <common/utils.hpp>
+#include <component/{{ snake_name }}/v1/{{ snake_name }}.pb.h>
+#include <config/resource.hpp>
+#include <registry/registry.hpp>
+#include <string>
+#include <subtype/subtype.hpp>
+
+class {{ camel_name }}Subtype : public ResourceSubtype {
+public:
+  std::shared_ptr<ResourceServerBase> create_resource_server(
+      std::shared_ptr<SubtypeService> svc) override;
+  std::shared_ptr<ResourceBase> create_rpc_client(
+      std::string name, std::shared_ptr<grpc::Channel> chan) override;
+  {{ camel_name }}Subtype(const google::protobuf::ServiceDescriptor *service_descriptor)
+      : ResourceSubtype(service_descriptor){};
+};
+
+class {{ camel_name }} : public ComponentBase {
+public:
+  {% for type in component.structs %}
+  struct {{ type.name }} {
+    {% for member in type.members -%}
+        {{ member.type_t }} {{ member.name }};
+    {%- endfor %}
+  };
+  {% endfor %}
+
+  // functions shared across all components
+  static std::shared_ptr<ResourceSubtype> resource_subtype();
+  static Subtype subtype();
+
+  {% for fn in component.from_proto_fns %}
+  static {{ fn.return_t }} {{ fn.name }}({% for arg in fn.args -%} 
+        viam::component::{{ snake_name }}::v1::{{ arg.type_t }} {{ arg.name }}{% if not loop.last %}, {% endif %}
+    {%- endfor %});
+    {% endfor %}
+
+  {% for fn in component.to_proto_fns %}
+  static viam::component::{{ snake_name }}::v1::{{ fn.return_t }} {{ fn.name }}({% for arg in fn.args -%} 
+        {{ arg.type_t }} {{ arg.name }}{% if not loop.last %}, {% endif %}
+    {%- endfor %});
+  {% endfor %}
+
+  {% for fn in component.member_fns %}
+  virtual {{ fn.return_t }} {{ fn.name }}({% for arg in fn.args -%} 
+        {{ arg.type_t }} {{ arg.name }}{% if not loop.last %}, {% endif %}
+    {%- endfor %}) = 0;
+  {% endfor %}
+
+protected:
+  explicit {{ camel_name }}(std::string name) : ComponentBase(std::move(name)){};
+};
+
+{% for struct_type in component.structs %}
+bool operator==(const {{ camel_name }}::{{struct_type.name}}& lhs, const {{ camel_name }}::{{ struct_type.name }}& rhs);
+{% endfor %}

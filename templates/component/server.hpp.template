@@ -1,0 +1,29 @@
+{% set snake_name = component.name | lower %}
+{% set camel_name = component.name | camel %}
+#pragma once
+
+#include <common/v1/common.pb.h>
+#include <component/{{ snake_name }}/v1/{{ snake_name }}.grpc.pb.h>
+
+#include <resource/resource_server_base.hpp>
+#include <subtype/subtype.hpp>
+
+class {{camel_name}}Server : public ResourceServerBase,
+                     public viam::component::{{ snake_name }}::v1::{{ camel_name }}Service::Service {
+   public:
+   {% for rpc in component.rpcs %}
+    ::grpc::Status {{ rpc.rpc_name }}(::grpc::ServerContext* context,
+                            const ::viam::component::{{ snake_name }}::v1::{{ rpc.req_t }}* request,
+                            ::viam::component::{{ snake_name }}::v1::{{ rpc.resp_t }}* response) override;
+   {% endfor %}
+
+    void register_server(std::shared_ptr<Server> server) override;
+
+    std::shared_ptr<SubtypeService> get_sub_svc();
+
+    {{ camel_name }}Server() : sub_svc(std::make_shared<SubtypeService>()){};
+    {{ camel_name }}Server(std::shared_ptr<SubtypeService> sub_svc) : sub_svc(sub_svc){};
+
+   private:
+    std::shared_ptr<SubtypeService> sub_svc;
+};

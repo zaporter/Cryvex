@@ -1,0 +1,30 @@
+{% set snake_name = component.name | lower %}
+{% set camel_name = component.name | camel %}
+#pragma once
+
+#include <common/v1/common.pb.h>
+#include <component/{{ snake_name }}/v1/{{ snake_name }}.grpc.pb.h>
+#include <component/{{ snake_name }}/v1/{{ snake_name }}.pb.h>
+
+#include <components/{{ snake_name }}/{{ snake_name }}.hpp>
+#include <components/{{ snake_name }}/client.hpp>
+#include <components/{{ snake_name }}/server.hpp>
+
+class Mock{{ camel_name }} : public {{ camel_name }} {
+    public:
+
+    {%- for fn in component.member_fns %}
+    {{ fn.return_t }} {{ fn.name }}({% for arg in fn.args -%} 
+        {{ arg.type_t }} {{ arg.name }}{% if not loop.last %}, {% endif %}
+    {%- endfor %}) override;
+    {%- endfor %}
+    static std::shared_ptr<Mock{{ camel_name }}> get_mock_{{ snake_name }}();
+
+    Mock{{ camel_name }}(std::string name) : {{ camel_name }}(std::move(name)){};
+
+   private:
+    // TODO add private members for mock
+    std::shared_ptr<std::unordered_map<std::string, std::shared_ptr<ProtoType>>> map;
+};
+
+// TODO create fake_xxx functions
