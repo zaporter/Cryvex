@@ -14,6 +14,9 @@
 #include <config/resource.hpp>
 #include <robot/client.hpp>
 
+namespace viam {
+namespace cppsdk {
+
 /// @class {{ camel_name }}Client
 /// @brief gRPC client implementation of a `{{ camel_name }}` component.
 /// @ingroup {{ camel_name }}
@@ -41,3 +44,6 @@ class {{ camel_name }}Client : public {{ camel_name }} {
     std::unique_ptr<viam::component::{{ snake_name }}::v1::{{ camel_name }}Service::StubInterface> stub_;
     std::shared_ptr<grpc::Channel> channel_;
 };
+
+}  // namespace cppsdk
+}  // namespace viam

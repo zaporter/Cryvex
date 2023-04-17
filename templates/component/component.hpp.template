@@ -13,6 +13,9 @@
 #include <string>
 #include <subtype/subtype.hpp>
 
+namespace viam {
+namespace cppsdk {
+
 /// @defgroup {{ camel_name }} Classes related to the `{{ camel_name }}` component.
 
 /// @class {{ camel_name }}Subtype
@@ -76,7 +79,7 @@ public:
   {% endfor %}
 
   {% for fn in component.member_fns %}
-  /// {{ fn.comment }}
+  ///{{ fn.comment }}
   virtual {{ fn.return_t }} {{ fn.name }}({% for arg in fn.args -%} 
         {{ arg.type_t }} {{ arg.name }}{% if not loop.last %}, {% endif %}
     {%- endfor %}) = 0;
@@ -89,3 +92,6 @@ protected:
 {% for struct_type in component.structs %}
 bool operator==(const {{ camel_name }}::{{struct_type.name}}& lhs, const {{ camel_name }}::{{ struct_type.name }}& rhs);
 {% endfor %}
+
+}  // namespace cppsdk
+}  // namespace viam

@@ -15,6 +15,8 @@
 #include <config/resource.hpp>
 #include <robot/client.hpp>
 
+namespace viam {
+namespace cppsdk {
 
 {% for fn in component.member_fns %}
 {# we want to have Component::type if it isn't a base type. Otherwise just the type #}
@@ -39,7 +41,11 @@
     {%- endfor %}
 
     stub_->{{  component.rpcs | filter(attribute="func_name", value=fn.name) | nth(n=0) | get(key="rpc_name") }}(&ctx, request, &response);
+    {%- if not qualified_return_type == "void" %}
     return from_proto(response);
+    {% endif %}
 }
 {% endfor %}
 
+}  // namespace cppsdk
+}  // namespace viam

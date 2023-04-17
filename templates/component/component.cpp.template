@@ -13,6 +13,9 @@
 #include <registry/registry.hpp>
 #include <resource/resource.hpp>
 
+namespace viam {
+namespace cppsdk {
+
 std::shared_ptr<ResourceServerBase> {{ camel_name }}Subtype::create_resource_server(
     std::shared_ptr<SubtypeService> svc) {
     return std::make_shared<{{ camel_name }}Server>(svc);
@@ -64,7 +67,7 @@ viam::component::{{ snake_name }}::v1::{{ fn.return_t }} {{ camel_name }}::{{ fn
     {% endfor -%}
     {% endif -%}
     {% endfor -%}
-    return proto
+    return proto;
 }
 {% endfor %}
 
@@ -87,3 +90,6 @@ bool init() {
 
 bool inited = init();
 }  // namespace
+
+}  // namespace cppsdk
+}  // namespace viam
