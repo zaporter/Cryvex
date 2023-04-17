@@ -6,9 +6,9 @@ mod parse;
 mod template;
 mod utils;
 
-use clap::{Parser, Subcommand};
+use clap::{Parser};
 use env_logger::Env;
-use log::{debug, error, info, log_enabled, Level};
+
 use parse::*;
 use std::path::PathBuf;
 
