@@ -87,7 +87,7 @@ pub fn from_proto(input: &str) -> Result<ComponentServiceProto> {
                         Rule::COMMENT => {
                             last_comment = Some(
                                 last_comment.take().unwrap_or(String::new())
-                                    + service_pair.as_str().into(),
+                                    + trim_comment_str(service_pair.as_str()).into(),
                             )
                         }
                         Rule::rpc => {
@@ -107,11 +107,16 @@ pub fn from_proto(input: &str) -> Result<ComponentServiceProto> {
                 }
             }
             Rule::COMMENT => {
-                last_comment =
-                    Some(last_comment.take().unwrap_or(String::new()) + pair.as_str().into())
+                last_comment = Some(
+                    last_comment.take().unwrap_or(String::new())
+                        + trim_comment_str(pair.as_str()).into(),
+                )
             }
             Rule::enum_ => {
-                let comment = last_comment.take();
+                let mut comment = last_comment.take();
+                if let Some(ref mut comment) = comment {
+                    *comment = trim_comment_str(&comment).to_string()
+                }
                 let mut inner = pair.into_inner();
                 let name = inner.next().unwrap().as_str().to_string();
                 let mut members = Vec::new();
@@ -120,7 +125,7 @@ pub fn from_proto(input: &str) -> Result<ComponentServiceProto> {
                     if field_pair.as_rule() == Rule::COMMENT {
                         last_comment = Some(
                             last_comment.take().unwrap_or(String::new())
-                                + field_pair.as_str().into(),
+                                + trim_comment_str(field_pair.as_str()).into(),
                         )
                     } else if field_pair.as_rule() == Rule::enumField {
                         let mut field_inner = field_pair.into_inner();
@@ -148,7 +153,7 @@ pub fn from_proto(input: &str) -> Result<ComponentServiceProto> {
                     if field_pair.as_rule() == Rule::COMMENT {
                         last_comment = Some(
                             last_comment.take().unwrap_or(String::new())
-                                + field_pair.as_str().into(),
+                                + trim_comment_str(field_pair.as_str()).into(),
                         )
                     } else if field_pair.as_rule() == Rule::field {
                         let mut field_inner = field_pair.into_inner();
@@ -190,4 +195,8 @@ impl ComponentServiceProto {
         let proto_string = fs::read_to_string(path)?;
         return from_proto(&proto_string);
     }
+}
+
+fn trim_comment_str(commentstr: &str) -> &str {
+    commentstr.trim_start_matches("//")
 }

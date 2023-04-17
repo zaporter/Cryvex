@@ -1,5 +1,8 @@
-{% set snake_name = component.name | lower %}
-{% set camel_name = component.name | camel %}
+{% set snake_name = component.name | lower -%}
+{% set camel_name = component.name | camel -%}
+/// @file components/{{ snake_name }}/{{ snake_name }}.hpp
+///
+/// @brief Defines a `{{ camel_name }}` component.
 #pragma once
 
 #include <common/proto_type.hpp>
@@ -10,6 +13,11 @@
 #include <string>
 #include <subtype/subtype.hpp>
 
+/// @defgroup {{ camel_name }} Classes related to the `{{ camel_name }}` component.
+
+/// @class {{ camel_name }}Subtype
+/// @brief Defines a `ResourceSubtype` for the `{{ camel_name }}` component.
+/// @ingroup {{ camel_name }}
 class {{ camel_name }}Subtype : public ResourceSubtype {
 public:
   std::shared_ptr<ResourceServerBase> create_resource_server(
@@ -20,16 +28,27 @@ public:
       : ResourceSubtype(service_descriptor){};
 };
 
+/// @class {{ camel_name }} {{ snake_name }}.hpp "components/{{ snake_name }}/{{ snake_name }}.hpp"
+/// @brief TODO
+/// @ingroup {{ camel_name }}
+///
+/// This acts as an abstract base class to be inherited from by any drivers representing
+/// specific {{ snake_name }} implementations. This class cannot be used on its own.
 class {{ camel_name }} : public ComponentBase {
 public:
   {% for type in component.structs %}
+  /// @struct {{ type.name }}
+  /// @brief TODO.
   struct {{ type.name }} {
     {%- for member in type.members %}
+        ///{{ member.comment }}
         {{ member.type_t }} {{ member.name }};
     {%- endfor %}
   };
   {% endfor %}
   {% for enum in component.enums %}
+  /// @enum {{ enum.name }}
+  /// @brief TODO.
   enum {{ enum.name }} {
     {%- for member in enum.members %}
         {{ member.name }}{% if not loop.last %}, {% endif %}
@@ -43,18 +62,21 @@ public:
   static Subtype subtype();
 
   {% for fn in component.from_proto_fns %}
+  /// @brief creates an `{{ fn.return_t }}` struct from its proto representation.
   static {{ fn.return_t }} {{ fn.name }}({% for arg in fn.args -%} 
         viam::component::{{ snake_name }}::v1::{{ arg.type_t }} {{ arg.name }}{% if not loop.last %}, {% endif %}
     {%- endfor %});
     {% endfor %}
 
   {% for fn in component.to_proto_fns %}
+  /// @brief converts an `{{ fn.args | nth(n=0) | get(key="type_t") }}` struct to its proto representation.
   static viam::component::{{ snake_name }}::v1::{{ fn.return_t }} {{ fn.name }}({% for arg in fn.args -%} 
         {{ arg.type_t }} {{ arg.name }}{% if not loop.last %}, {% endif %}
     {%- endfor %});
   {% endfor %}
 
   {% for fn in component.member_fns %}
+  /// {{ fn.comment }}
   virtual {{ fn.return_t }} {{ fn.name }}({% for arg in fn.args -%} 
         {{ arg.type_t }} {{ arg.name }}{% if not loop.last %}, {% endif %}
     {%- endfor %}) = 0;

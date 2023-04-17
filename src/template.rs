@@ -45,8 +45,6 @@ pub fn gen_templates(proto: ComponentServiceProto, opts: &CliOpts) -> anyhow::Re
     Ok(())
 }
 
-// This was created to allow for future growth
-// It looks pointless now but it isnt
 #[derive(Serialize, Clone, Debug)]
 struct TemplateInput {
     pub component: ComponentDec,
@@ -65,6 +63,7 @@ struct ComponentDec {
 
 #[derive(Serialize, Clone, Debug)]
 struct RpcDec {
+    comment: Option<String>,
     rpc_name: String,  // GetProperties
     func_name: String, // get_properties
     req_t: String,     // GetPropertiesRequest
@@ -73,12 +72,14 @@ struct RpcDec {
 
 #[derive(Serialize, Clone, Debug)]
 struct StructDec {
+    comment: Option<String>,
     name: String,
     members: Vec<Variable>,
 }
 
 #[derive(Serialize, Clone, Debug)]
 struct FnDec {
+    comment: Option<String>,
     name: String,
     return_t: String,
     args: Vec<Variable>,
@@ -86,6 +87,7 @@ struct FnDec {
 
 #[derive(Serialize, Clone, Debug)]
 struct Variable {
+    comment: Option<String>,
     type_t: String,
     name: String,
 }
@@ -249,7 +251,9 @@ impl ComponentDec {
                 from_proto_fns.push(FnDec {
                     name: FROM_PROTO_T.into(),
                     return_t: name.clone(),
+                    comment: None,
                     args: vec![Variable {
+                        comment: None,
                         name: "proto".to_string(),
                         type_t: orig_name.to_string(),
                     }],
@@ -258,7 +262,9 @@ impl ComponentDec {
                 to_proto_fns.push(FnDec {
                     name: TO_PROTO_T.into(),
                     return_t: orig_name.into(),
+                    comment: None,
                     args: vec![Variable {
+                        comment: None,
                         name: name.to_owned(),
                         type_t: name.to_owned(),
                     }],
@@ -268,11 +274,13 @@ impl ComponentDec {
                 .fields
                 .iter()
                 .map(|f| Variable {
+                    comment: f.comment.clone(),
                     name: f.name.clone(),
                     type_t: repl_map.map(&f.type_t),
                 })
                 .collect();
             structs.push(StructDec {
+                comment: message.comment.clone(),
                 name: repl_map.map(&name),
                 members: args,
             })
@@ -291,6 +299,7 @@ impl ComponentDec {
             let name = repl_map.map(&orig_name);
             // insert map for client / server recall
             rpcs.push(RpcDec {
+                comment: rpc.comment.clone(),
                 rpc_name: rpc.name.clone(),
                 func_name: name.clone(),
                 req_t: rpc.request_name.clone(),
@@ -311,17 +320,20 @@ impl ComponentDec {
                     .filter(|f| opts.include_name_field || f.name != NAME_PARAM)
                     .filter(|f| opts.include_extra_field || f.name != EXTRA_PARAM)
                     .map(|f| Variable {
+                        comment: f.comment.clone(),
                         name: f.name.clone(),
                         type_t: repl_map.map(&f.type_t),
                     })
                     .collect()
             } else {
                 vec![Variable {
+                    comment: Some("TODO".into()),
                     type_t: "ERROR".into(),
                     name: "TODO".into(),
                 }]
             };
             member_fns.push(FnDec {
+                comment: rpc.comment.clone(),
                 name,
                 return_t: repl_map.map(&rpc.response_name),
                 args,

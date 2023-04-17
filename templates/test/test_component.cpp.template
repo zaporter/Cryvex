@@ -1,5 +1,5 @@
-{% set snake_name = component.name | lower %}
-{% set camel_name = component.name | camel %}
+{% set snake_name = component.name | lower -%}
+{% set camel_name = component.name | camel -%}
 #define BOOST_TEST_MODULE test module test_{{ snake_name }}
 
 #include <typeinfo>
@@ -25,7 +25,8 @@ BOOST_AUTO_TEST_SUITE(test_{{ snake_name }})
 {% for fn in component.member_fns %}
 BOOST_AUTO_TEST_CASE(test_{{ fn.name }}) {
     std::shared_ptr<Mock{{ camel_name }}> {{ snake_name }} = Mock{{ camel_name }}::get_mock_{{ snake_name }}();
-    BOOST_CHECK(true);
+    // TODO impl
+    BOOST_CHECK(false);
 }
 {% endfor %}
 

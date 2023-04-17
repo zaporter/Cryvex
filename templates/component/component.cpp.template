@@ -1,5 +1,5 @@
-{%- set snake_name = component.name | lower %}
-{%- set camel_name = component.name | camel %}
+{%- set snake_name = component.name | lower -%}
+{%- set camel_name = component.name | camel -%}
 #include <components/{{ snake_name }}/{{ snake_name }}.hpp>
 
 #include <google/protobuf/descriptor.h>

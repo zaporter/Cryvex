@@ -1,5 +1,5 @@
-{% set snake_name = component.name | lower %}
-{% set camel_name = component.name | camel %}
+{% set snake_name = component.name | lower -%}
+{% set camel_name = component.name | camel -%}
 #include <tests/mocks/mock_{{snake_name}}.hpp>
 
 #include <common/v1/common.pb.h>
@@ -18,7 +18,8 @@ AttributeMap Mock{{ camel_name }}::do_command(AttributeMap command) {
 {{ camel_name }}::{{ fn.return_t }} Mock{{ camel_name }}::{{ fn.name }}({% for arg in fn.args -%} 
     {{ arg.type_t }} {{ arg.name }}{% if not loop.last %}, {% endif %}
 {%- endfor %}) {
-    return; // TODO attr
+    // TODO impl
+    return; 
 };
 {%- endfor %}
 {{ camel_name }}::raw_image Mock{{ camel_name }}::get_image(std::string mime_type) {

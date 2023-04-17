@@ -1,5 +1,8 @@
-{% set snake_name = component.name | lower %}
-{% set camel_name = component.name | camel %}
+{% set snake_name = component.name | lower -%}
+{% set camel_name = component.name | camel -%}
+/// @file components/{{ snake_name }}/client.hpp
+///
+/// @brief Implements a gRPC client for the `{{ camel_name }}` component.
 #pragma once
 
 #include <grpcpp/channel.h>
@@ -11,6 +14,9 @@
 #include <config/resource.hpp>
 #include <robot/client.hpp>
 
+/// @class {{ camel_name }}Client
+/// @brief gRPC client implementation of a `{{ camel_name }}` component.
+/// @ingroup {{ camel_name }}
 class {{ camel_name }}Client : public {{ camel_name }} {
    public:
    {%- for fn in component.member_fns %}

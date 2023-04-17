@@ -1,5 +1,8 @@
-{% set snake_name = component.name | lower %}
-{% set camel_name = component.name | camel %}
+{% set snake_name = component.name | lower -%}
+{% set camel_name = component.name | camel -%}
+/// @file components/{{ snake_name }}/server.hpp
+///
+/// @brief Implements a gRPC server for the `{{ camel_name }}` component.
 #pragma once
 
 #include <common/v1/common.pb.h>
@@ -8,6 +11,9 @@
 #include <resource/resource_server_base.hpp>
 #include <subtype/subtype.hpp>
 
+/// @class {{ camel_name }}Server
+/// @brief gRPC server implementation of a `{{ camel_name }}` component.
+/// @ingroup {{ camel_name }}
 class {{camel_name}}Server : public ResourceServerBase,
                      public viam::component::{{ snake_name }}::v1::{{ camel_name }}Service::Service {
    public:

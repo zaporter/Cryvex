@@ -1,5 +1,5 @@
-{% set snake_name = component.name | lower %}
-{% set camel_name = component.name | camel %}
+{% set snake_name = component.name | lower -%}
+{% set camel_name = component.name | camel -%}
 #pragma once
 
 #include <common/v1/common.pb.h>

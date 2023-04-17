@@ -1,5 +1,5 @@
-{% set snake_name = component.name | lower %}
-{% set camel_name = component.name | camel %}
+{% set snake_name = component.name | lower -%}
+{% set camel_name = component.name | camel -%}
 #include <components/{{ snake_name }}/client.hpp>
 
 #include <algorithm>
@@ -17,7 +17,14 @@
 
 
 {% for fn in component.member_fns %}
-{{ camel_name }}::{{ fn.return_t }} {{ camel_name }}Client::{{ fn.name }}({% for arg in fn.args -%} 
+{# we want to have Component::type if it isn't a base type. Otherwise just the type #}
+{%- set is_custom_return_type = component.structs | filter(attribute="name", value=fn.return_t) | nth(n=0) -%}
+{%- if is_custom_return_type is object -%}
+    {%- set qualified_return_type = camel_name ~ "::" ~ fn.return_t -%}
+{% else %}
+    {%- set qualified_return_type = fn.return_t -%}
+{%- endif -%}
+{{ qualified_return_type }} {{ camel_name }}Client::{{ fn.name }}({% for arg in fn.args -%} 
     {{ arg.type_t }} {{ arg.name }}{% if not loop.last %}, {% endif %}
 {%- endfor %}){
     viam::component::{{ snake_name }}::v1::{{ component.rpcs | filter(attribute="func_name", value=fn.name) | nth(n=0) | get(key="req_t") }} request;
