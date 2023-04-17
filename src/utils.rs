@@ -16,6 +16,7 @@ pub fn string_prompt(prompt: &str) -> String {
     result
 }
 
+#[allow(dead_code)]
 pub fn confirm_prompt(prompt: &str) -> bool {
     print!("{} (y/N): ", prompt);
     io::stdout().flush().unwrap();

@@ -10,11 +10,21 @@
 #include <components/{{ snake_name }}/client.hpp>
 #include <components/{{ snake_name }}/server.hpp>
 
-class Mock{{ camel_name }} : public {{ camel_name }} {
+namespace viam {
+namespace cppsdktests {
+namespace {{ snake_name }} {
+
+class Mock{{ camel_name }} : public viam::cppsdk::{{ camel_name }} {
     public:
 
     {%- for fn in component.member_fns %}
-    {{ fn.return_t }} {{ fn.name }}({% for arg in fn.args -%} 
+    {% set is_custom_return_type = component.structs | filter(attribute="name", value=fn.return_t) | nth(n=0) -%}
+    {%- if is_custom_return_type is object -%}
+        {%- set qualified_return_type = "viam::cppsdk::" ~ camel_name ~ "::" ~ fn.return_t -%}
+    {% else %}
+        {%- set qualified_return_type = fn.return_t -%}
+    {%- endif -%}
+    {{ qualified_return_type }} {{ fn.name }}({% for arg in fn.args -%} 
         {{ arg.type_t }} {{ arg.name }}{% if not loop.last %}, {% endif %}
     {%- endfor %}) override;
     {%- endfor %}
@@ -28,3 +38,7 @@ class Mock{{ camel_name }} : public {{ camel_name }} {
 };
 
 // TODO create fake_xxx functions
+
+}  // namespace {{ snake_name }}
+}  // namespace cppsdktests
+}  // namespace viam

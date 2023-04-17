@@ -44,7 +44,7 @@ public:
   /// @brief TODO.
   struct {{ type.name }} {
     {%- for member in type.members %}
-        ///{{ member.comment }}
+        /// {{ member.comment | default(value="TODO") | trim }}
         {{ member.type_t }} {{ member.name }};
     {%- endfor %}
   };
@@ -79,7 +79,10 @@ public:
   {% endfor %}
 
   {% for fn in component.member_fns %}
-  ///{{ fn.comment }}
+  /// {{ fn.comment | default(value="TODO") | trim }}
+  {%- for arg in fn.args %}
+  /// @param {{ arg.name }} {{ arg.comment | default(value="TODO") | trim }}
+  {%- endfor %}
   virtual {{ fn.return_t }} {{ fn.name }}({% for arg in fn.args -%} 
         {{ arg.type_t }} {{ arg.name }}{% if not loop.last %}, {% endif %}
     {%- endfor %}) = 0;
@@ -91,7 +94,7 @@ protected:
 
 {% for struct_type in component.structs %}
 bool operator==(const {{ camel_name }}::{{struct_type.name}}& lhs, const {{ camel_name }}::{{ struct_type.name }}& rhs);
-{% endfor %}
+{%- endfor %}
 
 }  // namespace cppsdk
 }  // namespace viam

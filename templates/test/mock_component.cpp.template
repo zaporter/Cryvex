@@ -10,26 +10,33 @@
 #include <components/{{ snake_name }}/server.hpp>
 #include <tests/test_utils.hpp>
 
-AttributeMap Mock{{ camel_name }}::do_command(AttributeMap command) {
-    return map;
-}
+namespace viam {
+namespace cppsdktests {
+namespace {{ snake_name }} {
 
-{%- for fn in component.member_fns %}
-{{ camel_name }}::{{ fn.return_t }} Mock{{ camel_name }}::{{ fn.name }}({% for arg in fn.args -%} 
+using namespace viam::cppsdk;
+{% for fn in component.member_fns %}
+{%- set is_custom_return_type = component.structs | filter(attribute="name", value=fn.return_t) | nth(n=0) -%}
+{%- if is_custom_return_type is object -%}
+    {%- set qualified_return_type = camel_name ~ "::" ~ fn.return_t -%}
+{% else %}
+    {%- set qualified_return_type = fn.return_t -%}
+{%- endif %}
+{{ qualified_return_type }} Mock{{ camel_name }}::{{ fn.name }}({% for arg in fn.args -%} 
     {{ arg.type_t }} {{ arg.name }}{% if not loop.last %}, {% endif %}
 {%- endfor %}) {
     // TODO impl
     return; 
 };
 {%- endfor %}
-{{ camel_name }}::raw_image Mock{{ camel_name }}::get_image(std::string mime_type) {
-    return image;
-}
-
 
 std::shared_ptr<Mock{{ camel_name }}> Mock{{ camel_name }}::get_mock_{{ snake_name }}() {
-    auto {{ snake_name }} = std::make_shared<Mock{{ camel_name }}>("{{ snake_name }}");
+    auto {{ snake_name }} = std::make_shared<Mock{{ camel_name }}>("mock_{{ snake_name }}");
     // TODO {{ snake_name }}->attr = fake_attr();
 
     return {{ snake_name }};
 }
+
+}  // namespace {{ snake_name }}
+}  // namespace cppsdktests
+}  // namespace viam
