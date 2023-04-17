@@ -28,8 +28,8 @@ namespace cppsdk {
     std::shared_ptr<{{ camel_name }}> {{ comp_inst }} = std::dynamic_pointer_cast<{{ camel_name }}>(rb);
     {% set fn = component.member_fns | filter(attribute="name", value=rpc.func_name) | nth(n=0) %}
     {# we want to have Component::type if it isn't a base type. Otherwise just the type #}
-    {%- set is_custom_return_type = component.structs | filter(attribute="name", value=fn.return_t) | nth(n=0) -%}
-    {%- if is_custom_return_type is object -%}
+    {%- set custom_return_type = component.structs | filter(attribute="name", value=fn.return_t) | nth(n=0) -%}
+    {%- if custom_return_type is object -%}
         {%- set qualified_return_type = camel_name ~ "::" ~ fn.return_t -%}
     {% else %}
         {%- set qualified_return_type = fn.return_t -%}
@@ -38,8 +38,8 @@ namespace cppsdk {
         request->{{ arg.name }}(){% if not loop.last %}, {% endif %}
     {%- endfor -%});
 
-    {%- for member in return_type.members | default(value=[]) %}
-    *response->set_{{ member.name }}(result.{{ member.name }});
+    {%- for member in custom_return_type.members | default(value=[]) %}
+    response->set_{{ member.name }}(result.{{ member.name }});
     {%- endfor %}
 
     return ::grpc::Status();
