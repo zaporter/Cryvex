@@ -57,7 +57,7 @@ Subtype {{ camel_name }}::subtype() {
 {% endfor %}
 
 {% for fn in component.to_proto_fns %}
-{% set param = fn.args | first%}
+{% set param = fn.args | first %}
 viam::component::{{ snake_name }}::v1::{{ fn.return_t }} {{ camel_name }}::{{ fn.name }}( {{ param.type_t }} {{ param.name }}) {
     viam::component::{{ snake_name }}::v1::{{ fn.return_t }} proto;
     {%- for struct_type in component.structs %}

@@ -33,9 +33,24 @@ using namespace viam::cppsdk;
 std::shared_ptr<Mock{{ camel_name }}> Mock{{ camel_name }}::get_mock_{{ snake_name }}() {
     auto {{ snake_name }} = std::make_shared<Mock{{ camel_name }}>("mock_{{ snake_name }}");
     // TODO {{ snake_name }}->attr = fake_attr();
+    // auto-generated suggestions:
+    {%- for struct in component.structs %}
+    {{ snake_name }}->{{ struct.name }} = fake_{{ struct.name }}();
+    {%- endfor %}
 
     return {{ snake_name }};
 }
+
+// TODO auto-generated suggestions:
+{%- for struct in component.structs %}
+{{ camel_name }}::{{ struct.name }} fake_{{ struct.name }}() {
+    {{ camel_name }}::{{ struct.name }} {{ struct.name }};
+    {%- for member in struct.members %}
+    {{ struct.name }}.{{member.name}} = TODO;
+    {%- endfor %}
+    return {{ struct.name }};
+}
+{% endfor %}
 
 }  // namespace {{ snake_name }}
 }  // namespace cppsdktests

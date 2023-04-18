@@ -20,8 +20,8 @@ namespace cppsdk {
 
 {% for fn in component.member_fns %}
 {# we want to have Component::type if it isn't a base type. Otherwise just the type #}
-{%- set is_custom_return_type = component.structs | filter(attribute="name", value=fn.return_t) | nth(n=0) -%}
-{%- if is_custom_return_type is object -%}
+{%- set custom_return_type = component.structs | filter(attribute="name", value=fn.return_t) | nth(n=0) -%}
+{%- if custom_return_type is object -%}
     {%- set qualified_return_type = camel_name ~ "::" ~ fn.return_t -%}
 {% else %}
     {%- set qualified_return_type = fn.return_t -%}

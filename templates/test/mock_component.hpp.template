@@ -34,10 +34,18 @@ class Mock{{ camel_name }} : public viam::cppsdk::{{ camel_name }} {
 
    private:
     // TODO add private members for mock
+    // auto-generated suggestions:
+    {%- for struct in component.structs %}
+    viam::cppsdk::{{ camel_name }}::{{ struct.name }} {{ struct.name }};
+    {%- endfor %}
     std::shared_ptr<std::unordered_map<std::string, std::shared_ptr<ProtoType>>> map;
 };
 
 // TODO create fake_xxx functions
+// auto-generated suggestions:
+{%- for struct in component.structs %}
+viam::cppsdk::{{ camel_name }}::{{ struct.name }} fake_{{ struct.name }}();
+{%- endfor %}
 
 }  // namespace {{ snake_name }}
 }  // namespace cppsdktests
