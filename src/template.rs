@@ -16,18 +16,17 @@ pub fn gen_templates(proto: ComponentServiceProto, opts: &CliOpts) -> anyhow::Re
     let mut tera = match Tera::new("templates/**/*.template") {
         Ok(t) => t,
         Err(e) => {
-            println!("Parsing error(s): {}", e);
+            log::error!("Parsing error(s): {}", e);
             ::std::process::exit(1);
         }
     };
-    // built into tera
-    //tera.register_filter("lower", tera_text_filters::lower_case);
     tera.register_filter("camel", tera_text_filters::camel_case);
 
     let template = TemplateInput::from_proto(&proto, opts)?;
     let context = tera::Context::from_serialize(&template)?;
 
     for template_name in tera.get_template_names() {
+        // the string 'component' is magic and is replaced by the name of the component
         // mock_component.cpp.template -> ./out/mock_motor.cpp
         let out_name = template_name.trim_end_matches(".template");
         let out_name = out_name.replace("component", &template.component.name);
@@ -39,9 +38,8 @@ pub fn gen_templates(proto: ComponentServiceProto, opts: &CliOpts) -> anyhow::Re
         let result = tera.render(template_name, &context)?;
         std::fs::write(out_path.clone(), result)?;
 
-        println!("{}", &out_path.to_string_lossy())
+        println!("Writing to: {}", &out_path.to_string_lossy())
     }
-    // println!("{}", res);
     Ok(())
 }
 
@@ -95,26 +93,6 @@ struct Variable {
 #[derive(Clone, Debug, Default)]
 struct TypeReplacementMap {
     map: HashMap<String, String>,
-}
-
-fn request_to_struct_name(request: &str) -> String {
-    let mut struct_name = request.trim_end_matches("Response").to_lowercase();
-    if struct_name.starts_with("get") {
-        struct_name = struct_name[3..].to_string();
-    } else if struct_name.starts_with("is") {
-        struct_name = struct_name[2..].to_string();
-        struct_name = format!("{struct_name}_status")
-    } else {
-        println!("Warn: no rules to convert {request}")
-    }
-    struct_name
-}
-fn rpc_to_function_name(request: &str) -> String {
-    request.to_case(convert_case::Case::Snake)
-}
-
-fn enum_to_enum_name(request: &str) -> String {
-    request.to_case(convert_case::Case::Snake)
 }
 
 impl TypeReplacementMap {
@@ -207,7 +185,6 @@ impl TypeReplacementMap {
 }
 
 impl TemplateInput {
-    // Tree walking pattern
     pub fn from_proto(proto: &ComponentServiceProto, opts: &CliOpts) -> anyhow::Result<Self> {
         let mut repl_map = TypeReplacementMap::from_proto(proto, opts)?;
         Ok(Self {
@@ -217,7 +194,6 @@ impl TemplateInput {
     }
 }
 impl ComponentDec {
-    // Tree walking pattern
     pub fn from_proto(
         proto: &ComponentServiceProto,
         repl_map: &mut TypeReplacementMap,
@@ -350,4 +326,25 @@ impl ComponentDec {
             enums,
         })
     }
+}
+// These could probably go in util
+fn request_to_struct_name(request: &str) -> String {
+    let mut struct_name = request.trim_end_matches("Response").to_lowercase();
+    if struct_name.starts_with("get") {
+        struct_name = struct_name[3..].to_string();
+    } else if struct_name.starts_with("is") {
+        struct_name = struct_name[2..].to_string();
+        struct_name = format!("{struct_name}_status")
+    } else {
+        log::warn!("Warn: no rules to convert {request}")
+    }
+    struct_name
+}
+
+fn rpc_to_function_name(request: &str) -> String {
+    request.to_case(convert_case::Case::Snake)
+}
+
+fn enum_to_enum_name(request: &str) -> String {
+    request.to_case(convert_case::Case::Snake)
 }
