@@ -5,12 +5,14 @@
 /// @brief Defines a `{{ camel_name }}` component.
 #pragma once
 
+#include <string>
+
+#include <component/{{ snake_name }}/v1/{{ snake_name }}.pb.h>
+
 #include <common/proto_type.hpp>
 #include <common/utils.hpp>
-#include <component/{{ snake_name }}/v1/{{ snake_name }}.pb.h>
 #include <config/resource.hpp>
 #include <registry/registry.hpp>
-#include <string>
 #include <subtype/subtype.hpp>
 
 namespace viam {
@@ -65,21 +67,21 @@ public:
   static Subtype subtype();
 
   {% for fn in component.from_proto_fns %}
-  /// @brief creates an `{{ fn.return_t }}` struct from its proto representation.
+  /// @brief Creates a `{{ fn.return_t }}` struct from its proto representation.
   static {{ fn.return_t }} {{ fn.name }}({% for arg in fn.args -%} 
         viam::component::{{ snake_name }}::v1::{{ arg.type_t }} {{ arg.name }}{% if not loop.last %}, {% endif %}
     {%- endfor %});
     {% endfor %}
 
   {% for fn in component.to_proto_fns %}
-  /// @brief converts an `{{ fn.args | nth(n=0) | get(key="type_t") }}` struct to its proto representation.
+  /// @brief Converts a `{{ fn.args | nth(n=0) | get(key="type_t") }}` struct to its proto representation.
   static viam::component::{{ snake_name }}::v1::{{ fn.return_t }} {{ fn.name }}({% for arg in fn.args -%} 
         {{ arg.type_t }} {{ arg.name }}{% if not loop.last %}, {% endif %}
     {%- endfor %});
   {% endfor %}
 
   {% for fn in component.member_fns %}
-  /// {{ fn.comment | default(value="TODO") | trim }}
+  /// @brief {{ fn.comment | default(value="TODO") | trim }}
   {%- for arg in fn.args %}
   /// @param {{ arg.name }} {{ arg.comment | default(value="TODO") | trim }}
   {%- endfor %}

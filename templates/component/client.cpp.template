@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <stdexcept>
 #include <string>
 #include <utility>
 
@@ -40,7 +41,10 @@ namespace cppsdk {
     request.set_{{ arg.name }}({{ arg.name }});
     {%- endfor %}
 
-    stub_->{{  component.rpcs | filter(attribute="func_name", value=fn.name) | nth(n=0) | get(key="rpc_name") }}(&ctx, request, &response);
+    grpc::Status = stub_->{{  component.rpcs | filter(attribute="func_name", value=fn.name) | nth(n=0) | get(key="rpc_name") }}(&ctx, request, &response);
+    if (!status.ok()) {
+        throw std::runtime_error(status.error_message());
+    }
     {%- if not qualified_return_type == "void" %}
     return from_proto(response);
     {% endif %}
