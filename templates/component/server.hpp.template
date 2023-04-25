@@ -12,7 +12,7 @@
 #include <subtype/subtype.hpp>
 
 namespace viam {
-namespace cppsdk {
+namespace sdk {
 
 /// @class {{ camel_name }}Server
 /// @brief gRPC server implementation of a `{{ camel_name }}` component.
@@ -37,5 +37,5 @@ class {{camel_name}}Server : public ResourceServerBase,
     std::shared_ptr<SubtypeService> sub_svc;
 };
 
-}  // namespace cppsdk
+}  // namespace sdk
 }  // namespace viam

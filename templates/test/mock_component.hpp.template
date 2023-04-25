@@ -11,16 +11,16 @@
 #include <components/{{ snake_name }}/server.hpp>
 
 namespace viam {
-namespace cppsdktests {
+namespace sdktests {
 namespace {{ snake_name }} {
 
-class Mock{{ camel_name }} : public viam::cppsdk::{{ camel_name }} {
+class Mock{{ camel_name }} : public viam::sdk::{{ camel_name }} {
     public:
 
     {%- for fn in component.member_fns %}
     {% set is_custom_return_type = component.structs | filter(attribute="name", value=fn.return_t) | nth(n=0) -%}
     {%- if is_custom_return_type is object -%}
-        {%- set qualified_return_type = "viam::cppsdk::" ~ camel_name ~ "::" ~ fn.return_t -%}
+        {%- set qualified_return_type = "viam::sdk::" ~ camel_name ~ "::" ~ fn.return_t -%}
     {% else %}
         {%- set qualified_return_type = fn.return_t -%}
     {%- endif -%}
@@ -36,7 +36,7 @@ class Mock{{ camel_name }} : public viam::cppsdk::{{ camel_name }} {
     // TODO add private members for mock
     // auto-generated suggestions:
     {%- for struct in component.structs %}
-    viam::cppsdk::{{ camel_name }}::{{ struct.name }} {{ struct.name }};
+    viam::sdk::{{ camel_name }}::{{ struct.name }} {{ struct.name }};
     {%- endfor %}
     std::shared_ptr<std::unordered_map<std::string, std::shared_ptr<ProtoType>>> map;
 };
@@ -44,9 +44,9 @@ class Mock{{ camel_name }} : public viam::cppsdk::{{ camel_name }} {
 // TODO create fake_xxx functions
 // auto-generated suggestions:
 {%- for struct in component.structs %}
-viam::cppsdk::{{ camel_name }}::{{ struct.name }} fake_{{ struct.name }}();
+viam::sdk::{{ camel_name }}::{{ struct.name }} fake_{{ struct.name }}();
 {%- endfor %}
 
 }  // namespace {{ snake_name }}
-}  // namespace cppsdktests
+}  // namespace sdktests
 }  // namespace viam

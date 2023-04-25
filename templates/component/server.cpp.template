@@ -8,7 +8,7 @@
 #include <rpc/server.hpp>
 
 namespace viam {
-namespace cppsdk {
+namespace sdk {
 
 {% for rpc in component.rpcs %}
 ::grpc::Status {{ camel_name }}Server::{{ rpc.rpc_name }}(::grpc::ServerContext* context,
@@ -56,5 +56,5 @@ std::shared_ptr<SubtypeService> {{ camel_name }}Server::get_sub_svc() {
     return sub_svc;
 }
 
-}  // namespace cppsdk
+}  // namespace sdk
 }  // namespace viam

@@ -11,10 +11,10 @@
 #include <tests/test_utils.hpp>
 
 namespace viam {
-namespace cppsdktests {
+namespace sdktests {
 namespace {{ snake_name }} {
 
-using namespace viam::cppsdk;
+using namespace viam::sdk;
 {% for fn in component.member_fns %}
 {%- set is_custom_return_type = component.structs | filter(attribute="name", value=fn.return_t) | nth(n=0) -%}
 {%- if is_custom_return_type is object -%}
@@ -53,5 +53,5 @@ std::shared_ptr<Mock{{ camel_name }}> Mock{{ camel_name }}::get_mock_{{ snake_na
 {% endfor %}
 
 }  // namespace {{ snake_name }}
-}  // namespace cppsdktests
+}  // namespace sdktests
 }  // namespace viam

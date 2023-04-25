@@ -14,7 +14,7 @@
 #include <resource/resource.hpp>
 
 namespace viam {
-namespace cppsdk {
+namespace sdk {
 
 std::shared_ptr<ResourceServerBase> {{ camel_name }}Subtype::create_resource_server(
     std::shared_ptr<SubtypeService> svc) {
@@ -91,5 +91,5 @@ bool init() {
 bool inited = init();
 }  // namespace
 
-}  // namespace cppsdk
+}  // namespace sdk
 }  // namespace viam

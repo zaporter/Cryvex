@@ -17,7 +17,7 @@
 #include <robot/client.hpp>
 
 namespace viam {
-namespace cppsdk {
+namespace sdk {
 
 {% for fn in component.member_fns %}
 {# we want to have Component::type if it isn't a base type. Otherwise just the type #}
@@ -29,7 +29,7 @@ namespace cppsdk {
 {%- endif -%}
 {{ qualified_return_type }} {{ camel_name }}Client::{{ fn.name }}({% for arg in fn.args -%} 
     {{ arg.type_t }} {{ arg.name }}{% if not loop.last %}, {% endif %}
-{%- endfor %}){
+{%- endfor %}) {
     viam::component::{{ snake_name }}::v1::{{ component.rpcs | filter(attribute="func_name", value=fn.name) | nth(n=0) | get(key="req_t") }} request;
     viam::component::{{ snake_name }}::v1::{{ component.rpcs | filter(attribute="func_name", value=fn.name) | nth(n=0) | get(key="resp_t") }} response;
 
@@ -41,7 +41,7 @@ namespace cppsdk {
     request.set_{{ arg.name }}({{ arg.name }});
     {%- endfor %}
 
-    grpc::Status = stub_->{{  component.rpcs | filter(attribute="func_name", value=fn.name) | nth(n=0) | get(key="rpc_name") }}(&ctx, request, &response);
+    grpc::Status status = stub_->{{  component.rpcs | filter(attribute="func_name", value=fn.name) | nth(n=0) | get(key="rpc_name") }}(&ctx, request, &response);
     if (!status.ok()) {
         throw std::runtime_error(status.error_message());
     }
@@ -51,5 +51,5 @@ namespace cppsdk {
 }
 {% endfor %}
 
-}  // namespace cppsdk
+}  // namespace sdk
 }  // namespace viam

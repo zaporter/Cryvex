@@ -16,7 +16,7 @@
 #include <subtype/subtype.hpp>
 
 namespace viam {
-namespace cppsdk {
+namespace sdk {
 
 /// @defgroup {{ camel_name }} Classes related to the `{{ camel_name }}` component.
 
@@ -98,5 +98,5 @@ protected:
 bool operator==(const {{ camel_name }}::{{struct_type.name}}& lhs, const {{ camel_name }}::{{ struct_type.name }}& rhs);
 {%- endfor %}
 
-}  // namespace cppsdk
+}  // namespace sdk
 }  // namespace viam
