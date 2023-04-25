@@ -16,7 +16,7 @@ pub fn gen_templates(proto: ComponentServiceProto, opts: &CliOpts) -> anyhow::Re
     let mut tera = match Tera::new("templates/**/*.template") {
         Ok(t) => t,
         Err(e) => {
-            log::error!("Parsing error(s): {}", e);
+            log::error!("Template parsing error(s): {}", e);
             ::std::process::exit(1);
         }
     };
@@ -90,6 +90,9 @@ struct Variable {
     name: String,
 }
 
+// The TypeReplacementMap is used to replace
+// message types like GetStatusResponse witth status
+// or builtin types like uint64 with uint64_t
 #[derive(Clone, Debug, Default)]
 struct TypeReplacementMap {
     map: HashMap<String, String>,
@@ -208,7 +211,23 @@ impl ComponentDec {
         let mut structs = Vec::new();
         let mut rpcs = Vec::new();
         let mut enums = Vec::new();
+        let message_fields_to_variables = |fields: &Vec<Field>| {
+            fields
+                .iter()
+                .filter(|f| opts.include_name_field || f.name != NAME_PARAM)
+                .filter(|f| opts.include_extra_field || f.name != EXTRA_PARAM)
+                .map(|f| Variable {
+                    comment: f.comment.clone(),
+                    name: f.name.clone(),
+                    type_t: repl_map.map(&f.type_t),
+                })
+                .collect()
+        };
 
+        // Use messages to create:
+        //  - from_proto_fns
+        //  - to_proto_fns
+        //  - structs
         for message in &proto.messages {
             let orig_name = &message.name;
 
@@ -246,21 +265,14 @@ impl ComponentDec {
                     }],
                 });
             }
-            let args = message
-                .fields
-                .iter()
-                .map(|f| Variable {
-                    comment: f.comment.clone(),
-                    name: f.name.clone(),
-                    type_t: repl_map.map(&f.type_t),
-                })
-                .collect();
+            let args = message_fields_to_variables(&message.fields);
             structs.push(StructDec {
                 comment: message.comment.clone(),
                 name: repl_map.map(&name),
                 members: args,
             })
         }
+        // Create enums
         for enum_ in &proto.enums {
             let orig_name = &enum_.name;
             let name = repl_map.map(&orig_name);
@@ -270,6 +282,9 @@ impl ComponentDec {
                 members: enum_.members.clone(),
             });
         }
+        // Use rpcs to create rpcs to create:
+        //  - rpcs
+        //  - member_fns
         for rpc in &proto.rpcs {
             let orig_name = &rpc.name;
             let name = repl_map.map(&orig_name);
@@ -290,17 +305,7 @@ impl ComponentDec {
                 .filter(|m| m.name == rpc.request_name)
                 .next();
             let args = if let Some(request_msg) = request_msg {
-                request_msg
-                    .fields
-                    .iter()
-                    .filter(|f| opts.include_name_field || f.name != NAME_PARAM)
-                    .filter(|f| opts.include_extra_field || f.name != EXTRA_PARAM)
-                    .map(|f| Variable {
-                        comment: f.comment.clone(),
-                        name: f.name.clone(),
-                        type_t: repl_map.map(&f.type_t),
-                    })
-                    .collect()
+                message_fields_to_variables(&request_msg.fields)
             } else {
                 vec![Variable {
                     comment: Some("TODO".into()),

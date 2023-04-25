@@ -1,7 +1,10 @@
 /*
 ---
 Note: This .pest file was originally taken from https://github.com/Rantanen/protofish
-I have made very slight modifications 
+I have made slight modifications 
+
+The guidelines for the proto language spec are at: https://protobuf.dev/reference/protobuf/textformat-spec/
+
 --
 Their license: 
 
