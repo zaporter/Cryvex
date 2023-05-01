@@ -7,13 +7,13 @@
 
 #include <string>
 
-#include <component/{{ snake_name }}/v1/{{ snake_name }}.pb.h>
+#include <viam/api/component/{{ snake_name }}/v1/{{ snake_name }}.pb.h>
 
-#include <common/proto_type.hpp>
-#include <common/utils.hpp>
-#include <config/resource.hpp>
-#include <registry/registry.hpp>
-#include <subtype/subtype.hpp>
+#include <viam/sdk/common/proto_type.hpp>
+#include <viam/sdk/common/utils.hpp>
+#include <viam/sdk/config/resource.hpp>
+#include <viam/sdk/registry/registry.hpp>
+#include <viam/sdk/resource/resource_manager.hpp>
 
 namespace viam {
 namespace sdk {
@@ -26,7 +26,7 @@ namespace sdk {
 class {{ camel_name }}Subtype : public ResourceSubtype {
 public:
   std::shared_ptr<ResourceServerBase> create_resource_server(
-      std::shared_ptr<SubtypeService> svc) override;
+      std::shared_ptr<ResourceManager> manager) override;
   std::shared_ptr<ResourceBase> create_rpc_client(
       std::string name, std::shared_ptr<grpc::Channel> chan) override;
   {{ camel_name }}Subtype(const google::protobuf::ServiceDescriptor *service_descriptor)

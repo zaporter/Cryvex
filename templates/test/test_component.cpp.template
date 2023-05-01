@@ -9,16 +9,16 @@
 
 #include <boost/test/included/unit_test.hpp>
 
-#include <common/v1/common.pb.h>
-#include <component/{{ snake_name }}/v1/{{ snake_name }}.grpc.pb.h>
-#include <component/{{ snake_name }}/v1/{{ snake_name }}.pb.h>
+#include <viam/api/common/v1/common.pb.h>
+#include <viam/api/component/{{ snake_name }}/v1/{{ snake_name }}.grpc.pb.h>
+#include <viam/api/component/{{ snake_name }}/v1/{{ snake_name }}.pb.h>
 
-#include <common/proto_type.hpp>
-#include <components/{{ snake_name }}/{{ snake_name }}.hpp>
-#include <components/{{ snake_name }}/client.hpp>
-#include <components/{{ snake_name }}/server.hpp>
-#include <tests/mocks/mock_{{ snake_name }}.hpp>
-#include <tests/test_utils.hpp>
+#include <viam/sdk/common/proto_type.hpp>
+#include <viam/sdk/components/{{ snake_name }}/{{ snake_name }}.hpp>
+#include <viam/sdk/components/{{ snake_name }}/client.hpp>
+#include <viam/sdk/components/{{ snake_name }}/server.hpp>
+#include <viam/sdk/tests/mocks/mock_{{ snake_name }}.hpp>
+#include <viam/sdk/tests/test_utils.hpp>
 
 namespace viam {
 namespace sdktests {

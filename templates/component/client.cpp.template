@@ -1,6 +1,6 @@
 {% set snake_name = component.name | lower -%}
 {% set camel_name = component.name | camel -%}
-#include <components/{{ snake_name }}/client.hpp>
+#include <viam/sdk/components/{{ snake_name }}/client.hpp>
 
 #include <algorithm>
 #include <memory>
@@ -8,13 +8,13 @@
 #include <string>
 #include <utility>
 
-#include <common/v1/common.pb.h>
-#include <component/{{ snake_name }}/v1/{{ snake_name }}.grpc.pb.h>
+#include <viam/api/common/v1/common.pb.h>
+#include <viam/api/component/{{ snake_name }}/v1/{{ snake_name }}.grpc.pb.h>
 
-#include <common/utils.hpp>
-#include <components/{{ snake_name }}/{{ snake_name }}.hpp>
-#include <config/resource.hpp>
-#include <robot/client.hpp>
+#include <viam/sdk/common/utils.hpp>
+#include <viam/sdk/components/{{ snake_name }}/{{ snake_name }}.hpp>
+#include <viam/sdk/config/resource.hpp>
+#include <viam/sdk/robot/client.hpp>
 
 namespace viam {
 namespace sdk {

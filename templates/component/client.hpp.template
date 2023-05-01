@@ -7,12 +7,12 @@
 
 #include <grpcpp/channel.h>
 
-#include <component/{{ snake_name }}/v1/{{ snake_name }}.grpc.pb.h>
+#include <viam/api/component/{{ snake_name }}/v1/{{ snake_name }}.grpc.pb.h>
 
-#include <components/{{ snake_name }}/{{ snake_name }}.hpp>
-#include <components/{{ snake_name }}/server.hpp>
-#include <config/resource.hpp>
-#include <robot/client.hpp>
+#include <viam/sdk/components/{{ snake_name }}/{{ snake_name }}.hpp>
+#include <viam/sdk/components/{{ snake_name }}/server.hpp>
+#include <viam/sdk/config/resource.hpp>
+#include <viam/sdk/robot/client.hpp>
 
 namespace viam {
 namespace sdk {
@@ -31,14 +31,6 @@ class {{ camel_name }}Client : public {{ camel_name }} {
         : {{ camel_name }}(std::move(name)),
           stub_(viam::component::{{ snake_name }}::v1::{{ camel_name }}Service::NewStub(channel)),
           channel_(std::move(channel)){};
-
-   protected:
-    // This constructor leaves the `channel_` as a nullptr. This is useful for testing
-    // purposes, but renders it unusable for production use. Care should be taken to
-    // avoid use of this constructor outside of tests.
-    {{ camel_name }}Client(std::string name,
-                 std::unique_ptr<viam::component::{{ snake_name }}::v1::{{ camel_name }}Service::StubInterface> stub)
-        : {{ camel_name }}(std::move(name)), stub_(std::move(stub)){};
 
    private:
     std::unique_ptr<viam::component::{{ snake_name }}::v1::{{ camel_name }}Service::StubInterface> stub_;

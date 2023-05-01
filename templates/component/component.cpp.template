@@ -1,24 +1,24 @@
 {%- set snake_name = component.name | lower -%}
 {%- set camel_name = component.name | camel -%}
-#include <components/{{ snake_name }}/{{ snake_name }}.hpp>
+#include <viam/sdk/components/{{ snake_name }}/{{ snake_name }}.hpp>
 
 #include <google/protobuf/descriptor.h>
 
-#include <component/{{ snake_name }}/v1/{{ snake_name }}.grpc.pb.h>
-#include <component/{{ snake_name }}/v1/{{ snake_name }}.pb.h>
+#include <viam/api/component/{{ snake_name }}/v1/{{ snake_name }}.grpc.pb.h>
+#include <viam/api/component/{{ snake_name }}/v1/{{ snake_name }}.pb.h>
 
-#include <common/utils.hpp>
-#include <components/{{ snake_name }}/client.hpp>
-#include <components/{{ snake_name }}/server.hpp>
-#include <registry/registry.hpp>
-#include <resource/resource.hpp>
+#include <viam/sdk/common/utils.hpp>
+#include <viam/sdk/components/{{ snake_name }}/client.hpp>
+#include <viam/sdk/components/{{ snake_name }}/server.hpp>
+#include <viam/sdk/registry/registry.hpp>
+#include <viam/sdk/resource/resource.hpp>
 
 namespace viam {
 namespace sdk {
 
 std::shared_ptr<ResourceServerBase> {{ camel_name }}Subtype::create_resource_server(
-    std::shared_ptr<SubtypeService> svc) {
-    return std::make_shared<{{ camel_name }}Server>(svc);
+    std::shared_ptr<ResourceManager> manager) {
+    return std::make_shared<{{ camel_name }}Server>(manager);
 };
 
 std::shared_ptr<ResourceBase> {{ component.name | camel }}Subtype::create_rpc_client(
@@ -30,7 +30,7 @@ std::shared_ptr<ResourceSubtype> {{ camel_name }}::resource_subtype() {
     const google::protobuf::DescriptorPool* p = google::protobuf::DescriptorPool::generated_pool();
     const google::protobuf::ServiceDescriptor* sd =
         p->FindServiceByName(viam::component::{{ snake_name }}::v1::{{ camel_name }}Service::service_full_name());
-    if (sd == nullptr) {
+    if (!sd) {
         throw std::runtime_error("Unable to get service descriptor for the {{ snake_name }} service");
     }
     return std::make_shared<{{ camel_name }}Subtype>(sd);

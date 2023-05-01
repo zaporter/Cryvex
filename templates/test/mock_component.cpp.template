@@ -1,14 +1,14 @@
 {% set snake_name = component.name | lower -%}
 {% set camel_name = component.name | camel -%}
-#include <tests/mocks/mock_{{snake_name}}.hpp>
+#include <viam/sdk/tests/mocks/mock_{{snake_name}}.hpp>
 
-#include <common/v1/common.pb.h>
-#include <component/{{ snake_name }}/v1/{{ snake_name }}.grpc.pb.h>
-#include <component/{{ snake_name }}/v1/{{ snake_name }}.pb.h>
+#include <viam/api/common/v1/common.pb.h>
+#include <viam/api/component/{{ snake_name }}/v1/{{ snake_name }}.grpc.pb.h>
+#include <viam/api/component/{{ snake_name }}/v1/{{ snake_name }}.pb.h>
 
-#include <components/{{ snake_name }}/{{ snake_name }}.hpp>
-#include <components/{{ snake_name }}/server.hpp>
-#include <tests/test_utils.hpp>
+#include <viam/sdk/components/{{ snake_name }}/{{ snake_name }}.hpp>
+#include <viam/sdk/components/{{ snake_name }}/server.hpp>
+#include <viam/sdk/tests/test_utils.hpp>
 
 namespace viam {
 namespace sdktests {
@@ -35,7 +35,7 @@ std::shared_ptr<Mock{{ camel_name }}> Mock{{ camel_name }}::get_mock_{{ snake_na
     // TODO {{ snake_name }}->attr = fake_attr();
     // auto-generated suggestions:
     {%- for struct in component.structs %}
-    {{ snake_name }}->{{ struct.name }} = fake_{{ struct.name }}();
+    {{ snake_name }}_->{{ struct.name }} = fake_{{ struct.name }}();
     {%- endfor %}
 
     return {{ snake_name }};

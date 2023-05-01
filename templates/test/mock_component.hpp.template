@@ -2,13 +2,13 @@
 {% set camel_name = component.name | camel -%}
 #pragma once
 
-#include <common/v1/common.pb.h>
-#include <component/{{ snake_name }}/v1/{{ snake_name }}.grpc.pb.h>
-#include <component/{{ snake_name }}/v1/{{ snake_name }}.pb.h>
+#include <viam/api/common/v1/common.pb.h>
+#include <viam/api/component/{{ snake_name }}/v1/{{ snake_name }}.grpc.pb.h>
+#include <viam/api/component/{{ snake_name }}/v1/{{ snake_name }}.pb.h>
 
-#include <components/{{ snake_name }}/{{ snake_name }}.hpp>
-#include <components/{{ snake_name }}/client.hpp>
-#include <components/{{ snake_name }}/server.hpp>
+#include <viam/sdk/components/{{ snake_name }}/{{ snake_name }}.hpp>
+#include <viam/sdk/components/{{ snake_name }}/client.hpp>
+#include <viam/sdk/components/{{ snake_name }}/server.hpp>
 
 namespace viam {
 namespace sdktests {
@@ -36,7 +36,7 @@ class Mock{{ camel_name }} : public viam::sdk::{{ camel_name }} {
     // TODO add private members for mock
     // auto-generated suggestions:
     {%- for struct in component.structs %}
-    viam::sdk::{{ camel_name }}::{{ struct.name }} {{ struct.name }};
+    viam::sdk::{{ camel_name }}::{{ struct.name }} {{ struct.name }}_;
     {%- endfor %}
     std::shared_ptr<std::unordered_map<std::string, std::shared_ptr<ProtoType>>> map;
 };

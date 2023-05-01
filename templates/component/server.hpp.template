@@ -5,11 +5,11 @@
 /// @brief Implements a gRPC server for the `{{ camel_name }}` component.
 #pragma once
 
-#include <common/v1/common.pb.h>
-#include <component/{{ snake_name }}/v1/{{ snake_name }}.grpc.pb.h>
+#include <viam/api/common/v1/common.pb.h>
+#include <viam/api/component/{{ snake_name }}/v1/{{ snake_name }}.grpc.pb.h>
 
-#include <resource/resource_server_base.hpp>
-#include <subtype/subtype.hpp>
+#include <viam/sdk/resource/resource_manager.hpp>
+#include <viam/sdk/resource/resource_server_base.hpp>
 
 namespace viam {
 namespace sdk {
@@ -30,11 +30,8 @@ class {{camel_name}}Server : public ResourceServerBase,
 
     std::shared_ptr<SubtypeService> get_sub_svc();
 
-    {{ camel_name }}Server() : sub_svc(std::make_shared<SubtypeService>()){};
-    {{ camel_name }}Server(std::shared_ptr<SubtypeService> sub_svc) : sub_svc(sub_svc){};
-
-   private:
-    std::shared_ptr<SubtypeService> sub_svc;
+    {{ camel_name }}Server() : ResourceServerBase(std::make_shared<ResourceManager>()){};
+    {{ camel_name }}Server(std::shared_ptr<ResourceManager> manager) : ResourceServerBase(manager){};
 };
 
 }  // namespace sdk

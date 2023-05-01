@@ -1,11 +1,11 @@
 {% set snake_name = component.name | lower -%}
 {% set camel_name = component.name | camel -%}
-#include <components/{{ snake_name }}/server.hpp>
+#include <viam/sdk/components/{{ snake_name }}/server.hpp>
 
-#include <common/utils.hpp>
-#include <components/{{ snake_name }}/{{ snake_name }}.hpp>
-#include <config/resource.hpp>
-#include <rpc/server.hpp>
+#include <viam/sdk/common/utils.hpp>
+#include <viam/sdk/components/{{ snake_name }}/{{ snake_name }}.hpp>
+#include <viam/sdk/config/resource.hpp>
+#include <viam/sdk/rpc/server.hpp>
 
 namespace viam {
 namespace sdk {
@@ -15,13 +15,13 @@ namespace sdk {
                         const ::viam::component::{{ snake_name }}::v1::{{ rpc.req_t }}* request,
                         ::viam::component::{{ snake_name }}::v1::{{ rpc.resp_t }}* response) {
     
-    if (request == nullptr) {
+    if (!request) {
         return ::grpc::Status(::grpc::StatusCode::INVALID_ARGUMENT,
                               "Called [{{ camel_name }}::{{ rpc.rpc_name }}] without a request");
     };
 
-    std::shared_ptr<ResourceBase> rb = sub_svc->resource(request->name());
-    if (rb == nullptr) {
+    std::shared_ptr<ResourceBase> rb = resource_manager()->resource(request->name());
+    if (!rb) {
         return grpc::Status(grpc::UNKNOWN, "resource not found: " + request->name());
     }
     {% set comp_inst = snake_name %}
@@ -47,13 +47,7 @@ namespace sdk {
 {% endfor %}
 
 void {{ camel_name }}Server::register_server(std::shared_ptr<Server> server) {
-    viam::component::{{ snake_name }}::v1::{{ camel_name }}Service::Service* {{ snake_name }} =
-        static_cast<viam::component::{{ snake_name }}::v1::{{ camel_name }}Service::Service*>(this);
     server->register_service({{ snake_name }});
-}
-
-std::shared_ptr<SubtypeService> {{ camel_name }}Server::get_sub_svc() {
-    return sub_svc;
 }
 
 }  // namespace sdk
