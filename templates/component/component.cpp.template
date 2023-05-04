@@ -16,12 +16,15 @@
 namespace viam {
 namespace sdk {
 
-std::shared_ptr<ResourceServerBase> {{ camel_name }}Subtype::create_resource_server(
+{{ camel_name }}Subtype::{{ camel_name }}Subtype(const google::protobuf::ServiceDescriptor *service_descriptor)
+  : ResourceSubtype(service_descriptor){};
+
+std::shared_ptr<ResourceServer> {{ camel_name }}Subtype::create_resource_server(
     std::shared_ptr<ResourceManager> manager) {
     return std::make_shared<{{ camel_name }}Server>(manager);
 };
 
-std::shared_ptr<ResourceBase> {{ component.name | camel }}Subtype::create_rpc_client(
+std::shared_ptr<Resource> {{ component.name | camel }}Subtype::create_rpc_client(
     std::string name, std::shared_ptr<grpc::Channel> chan) {
     return std::make_shared<{{ component.name | camel }}Client>(std::move(name), std::move(chan));
 };
@@ -88,7 +91,7 @@ bool init() {
     return true;
 };
 
-bool inited = init();
+const bool inited = init();
 }  // namespace
 
 }  // namespace sdk

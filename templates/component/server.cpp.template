@@ -10,6 +10,8 @@
 namespace viam {
 namespace sdk {
 
+{{ camel_name }}Server::{{ camel_name }}Server() : ResourceServer(std::make_shared<ResourceManager>()){};
+{{ camel_name }}Server::{{ camel_name }}Server(std::shared_ptr<ResourceManager> manager) : ResourceServer(manager){};
 {% for rpc in component.rpcs %}
 ::grpc::Status {{ camel_name }}Server::{{ rpc.rpc_name }}(::grpc::ServerContext* context,
                         const ::viam::component::{{ snake_name }}::v1::{{ rpc.req_t }}* request,
@@ -20,7 +22,7 @@ namespace sdk {
                               "Called [{{ camel_name }}::{{ rpc.rpc_name }}] without a request");
     };
 
-    std::shared_ptr<ResourceBase> rb = resource_manager()->resource(request->name());
+    std::shared_ptr<Resource> rb = resource_manager()->resource(request->name());
     if (!rb) {
         return grpc::Status(grpc::UNKNOWN, "resource not found: " + request->name());
     }

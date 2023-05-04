@@ -22,15 +22,12 @@ namespace sdk {
 /// @ingroup {{ camel_name }}
 class {{ camel_name }}Client : public {{ camel_name }} {
    public:
+   {{ camel_name }}Client(std::string name, std::shared_ptr<grpc::Channel> channel);
    {%- for fn in component.member_fns %}
    {{ fn.return_t }} {{ fn.name }}({% for arg in fn.args -%} 
         {{ arg.type_t }} {{ arg.name }}{% if not loop.last %}, {% endif %}
     {%- endfor %}) override;
    {%- endfor %}
-    {{ camel_name }}Client(std::string name, std::shared_ptr<grpc::Channel> channel)
-        : {{ camel_name }}(std::move(name)),
-          stub_(viam::component::{{ snake_name }}::v1::{{ camel_name }}Service::NewStub(channel)),
-          channel_(std::move(channel)){};
 
    private:
     std::unique_ptr<viam::component::{{ snake_name }}::v1::{{ camel_name }}Service::StubInterface> stub_;

@@ -17,9 +17,11 @@ namespace sdk {
 /// @class {{ camel_name }}Server
 /// @brief gRPC server implementation of a `{{ camel_name }}` component.
 /// @ingroup {{ camel_name }}
-class {{camel_name}}Server : public ResourceServerBase,
+class {{camel_name}}Server : public ResourceServer,
                      public viam::component::{{ snake_name }}::v1::{{ camel_name }}Service::Service {
    public:
+   {{ camel_name }}Server();
+   explicit {{ camel_name }}Server(std::shared_ptr<ResourceManager> manager);
    {% for rpc in component.rpcs %}
     ::grpc::Status {{ rpc.rpc_name }}(::grpc::ServerContext* context,
                             const ::viam::component::{{ snake_name }}::v1::{{ rpc.req_t }}* request,
@@ -29,9 +31,6 @@ class {{camel_name}}Server : public ResourceServerBase,
     void register_server(std::shared_ptr<Server> server) override;
 
     std::shared_ptr<SubtypeService> get_sub_svc();
-
-    {{ camel_name }}Server() : ResourceServerBase(std::make_shared<ResourceManager>()){};
-    {{ camel_name }}Server(std::shared_ptr<ResourceManager> manager) : ResourceServerBase(manager){};
 };
 
 }  // namespace sdk

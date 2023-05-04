@@ -25,12 +25,11 @@ namespace sdk {
 /// @ingroup {{ camel_name }}
 class {{ camel_name }}Subtype : public ResourceSubtype {
 public:
-  std::shared_ptr<ResourceServerBase> create_resource_server(
+  {{ camel_name }}Subtype(const google::protobuf::ServiceDescriptor *service_descriptor);
+  std::shared_ptr<ResourceServer> create_resource_server(
       std::shared_ptr<ResourceManager> manager) override;
-  std::shared_ptr<ResourceBase> create_rpc_client(
+  std::shared_ptr<Resource> create_rpc_client(
       std::string name, std::shared_ptr<grpc::Channel> chan) override;
-  {{ camel_name }}Subtype(const google::protobuf::ServiceDescriptor *service_descriptor)
-      : ResourceSubtype(service_descriptor){};
 };
 
 /// @class {{ camel_name }} {{ snake_name }}.hpp "components/{{ snake_name }}/{{ snake_name }}.hpp"
@@ -39,7 +38,7 @@ public:
 ///
 /// This acts as an abstract base class to be inherited from by any drivers representing
 /// specific {{ snake_name }} implementations. This class cannot be used on its own.
-class {{ camel_name }} : public ComponentBase {
+class {{ camel_name }} : public Component{
 public:
   {% for type in component.structs %}
   /// @struct {{ type.name }}
@@ -91,7 +90,7 @@ public:
   {% endfor %}
 
 protected:
-  explicit {{ camel_name }}(std::string name) : ComponentBase(std::move(name)){};
+  explicit {{ camel_name }}(std::string name) : Component(std::move(name)){};
 };
 
 {% for struct_type in component.structs %}

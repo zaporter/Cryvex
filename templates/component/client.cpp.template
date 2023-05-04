@@ -19,6 +19,11 @@
 namespace viam {
 namespace sdk {
 
+{{ camel_name }}Client::{{ camel_name }}Client(std::string name, std::shared_ptr<grpc::Channel> channel)
+    : {{ camel_name }}(std::move(name)),
+      stub_(viam::component::{{ snake_name }}::v1::{{ camel_name }}Service::NewStub(channel)),
+      channel_(std::move(channel)){};
+
 {% for fn in component.member_fns %}
 {# we want to have Component::type if it isn't a base type. Otherwise just the type #}
 {%- set custom_return_type = component.structs | filter(attribute="name", value=fn.return_t) | nth(n=0) -%}
